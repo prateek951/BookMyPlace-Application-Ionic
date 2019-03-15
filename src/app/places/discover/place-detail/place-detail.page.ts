@@ -18,7 +18,7 @@ export class PlaceDetailPage implements OnInit {
     this.activatedRoute.paramMap.subscribe(paramMap => {
       if(!paramMap.has('placeId')) { 
         //redirect back to the places 
-        this.router.navigate(['/']);
+        this.router.navigateByUrl('/places/tabs/discover');
         return;
       }
       const placeId = paramMap.get('placeId');

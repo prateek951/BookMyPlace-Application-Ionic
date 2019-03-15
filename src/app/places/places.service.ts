@@ -5,9 +5,7 @@ import { Place } from './place.model';
   providedIn: 'root'
 })
 export class PlacesService {
-  
   //set up the mock data for the list of the places 
-  
   private _places:Place[] = [
       new Place('p1','Manhattan Mansion',
       'In the heart of the New York City',
@@ -34,9 +32,9 @@ export class PlacesService {
   //Utility method to fetch a specific place 
   fetchPlace(id: string) { 
     const place = this._places.find(p => p.id === id);
-    return {...place}
+    return Object.assign({},place);
   }
-
+  
 
   constructor() { }
 }
