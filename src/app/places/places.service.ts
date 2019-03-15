@@ -31,5 +31,12 @@ export class PlacesService {
     return [...this._places];
   }
 
+  //Utility method to fetch a specific place 
+  fetchPlace(id: string) { 
+    const place = this._places.find(p => p.id === id);
+    return {...place}
+  }
+
+
   constructor() { }
 }
