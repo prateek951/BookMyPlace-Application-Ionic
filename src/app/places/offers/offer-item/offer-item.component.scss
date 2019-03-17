@@ -1,0 +1,14 @@
+.offer__title { 
+    padding: 8px;
+    color: var(--ion-color-primary);
+}
+.offer-details { 
+    display: flex;
+    align-items: center;
+    .space-left { 
+        margin-left: 5px;
+    }
+    .small__text { 
+        font-size: 12px;
+    }
+}
