@@ -10,15 +10,15 @@ import { MenuController } from '@ionic/angular';
 })
 export class DiscoverPage implements OnInit {
   loadedPlaces : Place[];
-  //places that are not featured 
-  nonfeaturedPlaces: Place[];
+  // places that are not featured 
+  nonFeaturedPlaces: Place[];
 
   constructor(private _placesService : PlacesService, private menuController: MenuController) { }
 
   ngOnInit() {
-    //reach out to the service to get the list of the places
+    // reach out to the service to get the list of the places
     this.loadedPlaces = this._placesService.fetchPlaces();
-    this.nonfeaturedPlaces = this.loadedPlaces.filter(place => place.id !== this.loadedPlaces[1].id);
+    this.nonFeaturedPlaces = this.loadedPlaces.filter(place => place.id !== this.loadedPlaces[1].id);
     console.log(this.loadedPlaces);
   }
   // onOpenMenu() { 
