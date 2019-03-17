@@ -37,7 +37,18 @@ export class PlaceDetailPage implements OnInit {
   onBookPlace() {
     // here we want to open the modal 
     this.modalController.create({
-      component: CreateBookingComponent
-    }).then(modal => modal.present());
+      component: CreateBookingComponent,
+      componentProps: { selectedPlace : this.loadedPlace }
+    }).then(modal => {
+      modal.present();
+      return modal.onDidDismiss();
+    }).then(result => {
+      if(result.role === 'cancel') { 
+        console.log(result.data, result.role);
+      }
+      if(result.role === 'confirm') { 
+        console.log('BOOKED!');
+      }
+    });
   }
 }
