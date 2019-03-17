@@ -1,6 +1,6 @@
 <ion-header>
   <ion-toolbar color="primary">
-    <ion-title>Authenticate</ion-title>
+    <ion-title>{{mode==='register' ? 'Register' : 'Login'}}</ion-title>
   </ion-toolbar>
 </ion-header>
 
@@ -56,8 +56,10 @@
                  color="primary" 
                  fill="clear" 
                  expand="block" 
-                 fill="outline">
-                 Switch to Login Screen
+                 fill="outline"
+                 (click)="onChangeMode()"
+                 >
+                Switch to {{ mode === 'register' ? 'Login Screen' : 'Register Screen'}}
             </ion-button>
         </ion-col>
       </ion-row>

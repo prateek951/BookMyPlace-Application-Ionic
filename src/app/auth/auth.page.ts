@@ -12,7 +12,8 @@ import { NgForm } from '@angular/forms';
 export class AuthPage implements OnInit {
   // boolean for the loading 
   isLoading: boolean = false;
-
+  // by default set the mode to login 
+  mode: string = 'login';
   constructor(private auth: AuthService, private router: Router,private loadingController: LoadingController) { }
 
   ngOnInit() {
@@ -37,5 +38,12 @@ export class AuthPage implements OnInit {
   }
   onSubmit(form: NgForm) {
     console.log(form);
+  }
+  onChangeMode() { 
+    if(this.mode === 'login') {
+      this.mode = 'register';
+    }else { 
+      this.mode = 'login';
+    }
   }
 }
