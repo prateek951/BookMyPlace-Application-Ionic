@@ -62,7 +62,8 @@ export class PlaceDetailPage implements OnInit {
     // Create a modal 
     this.modalController.create({
       component: CreateBookingComponent,
-      componentProps: { selectedPlace : this.loadedPlace }
+      componentProps: { selectedPlace : this.loadedPlace,
+      selectedMode : mode }
     }).then(modal => {
       modal.present();
       return modal.onDidDismiss();
