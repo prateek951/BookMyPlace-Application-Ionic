@@ -37,12 +37,24 @@ export class AuthPage implements OnInit {
     });
   }
   onSubmit(form: NgForm) {
-    console.log(form);
+    // Check for the validity of the form 
+    if (form.invalid) {
+      return;
+    }
+    // Tap the email and the password
+    const { email, password } = form.value;
+    console.log(email, password);
+    if (this.mode === 'register') {
+      // Send a request to register the user
+    } else {
+      // Send a request to login the user
+    }
+
   }
   onChangeMode() { 
-    if(this.mode === 'login') {
+    if (this.mode === 'login') {
       this.mode = 'register';
-    }else { 
+    } else { 
       this.mode = 'login';
     }
   }
