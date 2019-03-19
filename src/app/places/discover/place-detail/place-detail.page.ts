@@ -72,7 +72,7 @@ export class PlaceDetailPage implements OnInit {
         console.log(result.data, result.role);
       }
       if(result.role === 'confirm') { 
-        console.log('BOOKED!');
+        console.log(result.data);
       }
     });
   }
