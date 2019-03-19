@@ -9,6 +9,11 @@ export class NewOfferPage implements OnInit {
 
   constructor() { }
 
+  onCreateOffer() {
+    console.log('inside the onCreateOffer component..');
+  }
+
+
   ngOnInit() {
   }
 
