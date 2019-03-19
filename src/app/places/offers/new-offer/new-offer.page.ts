@@ -14,6 +14,7 @@ export class NewOfferPage implements OnInit {
 
   onCreateOffer() {
     console.log('inside the onCreateOffer component..');
+    console.log(this.form);
   }
 
 
@@ -26,7 +27,9 @@ export class NewOfferPage implements OnInit {
       }),
       description : new FormControl(null, {
         updateOn : 'blur',
-        validators: [Validators.required, Validators.maxLength(180)]
+        validators: [Validators.required, 
+          Validators.minLength(5),
+          Validators.maxLength(180)]
       }),
       price : new FormControl(null, {
         updateOn: 'blur',

@@ -5,7 +5,7 @@
     </ion-buttons>
     <ion-title>Create a new offer</ion-title>
     <ion-buttons slot="primary">
-      <ion-button (click)="onCreateOffer()">
+      <ion-button  [disabled]="form.invalid" (click)="onCreateOffer()">
           <ion-icon name="checkmark" slot="icon-only"></ion-icon>
       </ion-button>
     </ion-buttons>
@@ -13,12 +13,17 @@
 </ion-header>
 
 <ion-content> 
+ <form [formGroup]="form">
   <ion-grid>
     <ion-row>
       <ion-col size-sm="6" offset-sm="3">
         <ion-item>
           <ion-label position="floating">Title</ion-label>
-          <ion-input type="text" placeholder="Enter a title" autocomplete autocorrect></ion-input>
+          <ion-input type="text" 
+                placeholder="Enter a title" 
+                autocomplete 
+                autocorrect
+                formControlName="title"></ion-input>
         </ion-item>
       </ion-col>
     </ion-row>
@@ -26,31 +31,51 @@
       <ion-col size-sm="6" offset-sm="3">
           <ion-item>
             <ion-label position="floating">Short Description</ion-label>
-            <ion-textarea rows="3" placeholder="Enter a short description"></ion-textarea>
+            <ion-textarea rows="3" 
+                placeholder="Enter a short description"
+                formControlName="description"></ion-textarea>
           </ion-item>
+      </ion-col>
+    </ion-row>
+    <ion-row *ngIf="form.get('description').invalid && form.get('description').touched">
+      <ion-col size-sm="6" offset-sm="3">
+        <span class="error__msg">Description must be between 5 and 180 characters</span>
       </ion-col>
     </ion-row>
     <ion-row>
       <ion-col size-sm="6" offset-sm="3">
         <ion-item>
           <ion-label position="floating">Price</ion-label>
-          <ion-input type="number" placeholder="Enter the price"></ion-input>
+          <ion-input type="number" 
+                placeholder="Enter the price"
+                formControlName="price"></ion-input>
         </ion-item>
+      </ion-col>
+    </ion-row>
+    <ion-row *ngIf="form.get('price').invalid && form.get('price').touched">
+      <ion-col size-sm="6" offset-sm="3">
+        <span class="error__msg">The minimum price we offer is 499.
+        </span>
       </ion-col>
     </ion-row>
     <ion-row>
       <ion-col size-sm="3" offset-sm="3">
         <ion-item>
           <ion-label position="floating">Available from</ion-label>
-          <ion-datetime min="2019-06-01" max="2025-12-31"></ion-datetime>
+          <ion-datetime min="2019-06-01" 
+                max="2025-12-31"
+                formControlName="dateFrom"></ion-datetime>
         </ion-item>
       </ion-col>
       <ion-col size-sm="3">
         <ion-item>
           <ion-label position="floating">Available to</ion-label>
-          <ion-datetime min="2019-06-02" max="2025-12-31"></ion-datetime>
+          <ion-datetime min="2019-06-02" 
+                max="2025-12-31"
+                formControlName="dateTo"></ion-datetime>
         </ion-item>
       </ion-col>
     </ion-row>
   </ion-grid>
+ </form>
 </ion-content>
