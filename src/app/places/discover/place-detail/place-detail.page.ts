@@ -12,6 +12,7 @@ import {
 } from "@ionic/angular";
 import { CreateBookingComponent } from "./../../../bookings/create-booking/create-booking.component";
 import { LoadingController } from '@ionic/angular';
+import { AuthService } from './../../../auth/auth.service';
 
 @Component({
   selector: "app-place-detail",
@@ -20,13 +21,14 @@ import { LoadingController } from '@ionic/angular';
 })
 export class PlaceDetailPage implements OnInit, OnDestroy {
   loadedPlace: Place;
-
+  isBookable:boolean = false;
   // Setup the subscription
   private placeSubscription: Subscription;
 
   constructor(
     private activatedRoute: ActivatedRoute,
     private router: Router,
+    private authService: AuthService,
     private placesService: PlacesService,
     private bookingsService: BookingService,
     private navController: NavController,
@@ -50,6 +52,9 @@ export class PlaceDetailPage implements OnInit, OnDestroy {
         .fetchPlace(placeId)
         .subscribe(place => {
           this.loadedPlace = place;
+          if(this.loadedPlace.userId !== this.authService.userId) { 
+            this.isBookable = true;
+          }
         });
       // console.log(this.loadedPlace);
     });

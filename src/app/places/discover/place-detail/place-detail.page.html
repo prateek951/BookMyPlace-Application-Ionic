@@ -28,7 +28,7 @@
     <ion-row>
       <ion-col size-sm="6" offset-sm="3" text-center no-padding>
         <ion-button color="primary" margin (click)="onBookPlace()"
-          >Book</ion-button>
+          [disabled]="!isBookable">{{isBookable? 'Book' : 'Not bookable'}}</ion-button>
       </ion-col>
     </ion-row>
   </ion-grid>
