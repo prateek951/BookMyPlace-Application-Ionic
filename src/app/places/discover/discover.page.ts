@@ -6,7 +6,7 @@ import { MenuController } from "@ionic/angular";
 import { SegmentChangeEventDetail } from "@ionic/core";
 import { Subscription } from "rxjs";
 import { AuthService } from "./../../auth/auth.service";
-import { pipe } from 'rxjs/operators';
+
 @Component({
   selector: "app-discover",
   templateUrl: "./discover.page.html",
@@ -15,8 +15,6 @@ import { pipe } from 'rxjs/operators';
 export class DiscoverPage implements OnInit, OnDestroy {
   loadedPlaces: Place[];
   relevantPlaces: Place[];
-
-  private chosenFilter = "all";
   // Create a subscription
   private placesSubscription: Subscription;
 
@@ -29,7 +27,6 @@ export class DiscoverPage implements OnInit, OnDestroy {
   ngOnInit() {
     // reach out to the service to get the list of the places
     // Store the subscription
-
     this.placesSubscription = this.placesService
       .fetchPlaces()
       .subscribe(places => {
@@ -43,8 +40,17 @@ export class DiscoverPage implements OnInit, OnDestroy {
   // }
   onFilterPlaces(e: CustomEvent<SegmentChangeEventDetail>) {
     // console.log(e.detail);
-    this.authService.userId.pipe(take(1))
-      
+    if (e.detail.value === "all") {
+      this.relevantPlaces = this.loadedPlaces;
+    } else {
+      // in case of bookable places
+      //get the list of all those places that are not created by me
+      //since only those are the ones that I can book
+
+      this.relevantPlaces = this.loadedPlaces.filter(
+        p => p.userId !== this.authService.userId
+      );
+    }
   }
 
   ngOnDestroy(): void {
