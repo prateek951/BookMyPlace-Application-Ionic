@@ -7,7 +7,7 @@ export class AuthService {
   private _isLoggedIn = false;
 
   private _userId = "dummy";
-
+  
   // Utility method to check whether the user is loggedIn or not
   get isLoggedIn() {
     return this._isLoggedIn;

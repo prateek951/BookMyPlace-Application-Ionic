@@ -1,10 +1,12 @@
+//tslint:disable
 import { Component, OnInit, OnDestroy } from "@angular/core";
 import { PlacesService } from "./../places.service";
 import { Place } from "./../place.model";
 import { MenuController } from "@ionic/angular";
 import { SegmentChangeEventDetail } from "@ionic/core";
 import { Subscription } from "rxjs";
-
+import { AuthService } from "./../../auth/auth.service";
+import { pipe } from 'rxjs/operators';
 @Component({
   selector: "app-discover",
   templateUrl: "./discover.page.html",
@@ -12,12 +14,15 @@ import { Subscription } from "rxjs";
 })
 export class DiscoverPage implements OnInit, OnDestroy {
   loadedPlaces: Place[];
+  relevantPlaces: Place[];
 
+  private chosenFilter = "all";
   // Create a subscription
   private placesSubscription: Subscription;
 
   constructor(
     private placesService: PlacesService,
+    private authService: AuthService,
     private menuController: MenuController
   ) {}
 
@@ -29,6 +34,7 @@ export class DiscoverPage implements OnInit, OnDestroy {
       .fetchPlaces()
       .subscribe(places => {
         this.loadedPlaces = places;
+        this.relevantPlaces = this.loadedPlaces;
       });
     // console.log(this.loadedPlaces);
   }
@@ -36,7 +42,9 @@ export class DiscoverPage implements OnInit, OnDestroy {
   //   this.menuController.toggle();
   // }
   onFilterPlaces(e: CustomEvent<SegmentChangeEventDetail>) {
-    console.log(e.detail);
+    // console.log(e.detail);
+    this.authService.userId.pipe(take(1))
+      
   }
 
   ngOnDestroy(): void {

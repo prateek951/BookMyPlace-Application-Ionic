@@ -28,7 +28,7 @@ export class PlacesService {
       2099,
       new Date("2019-01-01"),
       new Date("2019-12-31"),
-      "dummy"
+      "abc"
     ),
     new Place(
       "p3",
@@ -38,7 +38,7 @@ export class PlacesService {
       99.99,
       new Date("2019-01-01"),
       new Date("2019-12-31"),
-      "dummy"
+      "abc"
     )
   ]);
   constructor(private authService: AuthService) {}
