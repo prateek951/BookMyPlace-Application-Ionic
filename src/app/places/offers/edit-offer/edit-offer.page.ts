@@ -7,6 +7,8 @@ import { NavController } from "@ionic/angular";
 import { ActivatedRoute } from "@angular/router";
 import { FormGroup, FormControl, Validators } from "@angular/forms";
 import { Subscription } from "rxjs";
+import { Router } from "@angular/router";
+import { LoadingController } from "@ionic/angular";
 
 @Component({
   selector: "app-edit-offer",
@@ -24,7 +26,9 @@ export class EditOfferPage implements OnInit, OnDestroy {
   constructor(
     private route: ActivatedRoute,
     private placesService: PlacesService,
-    private navController: NavController
+    private navController: NavController,
+    private router: Router,
+    private loaderCtrl: LoadingController
   ) {}
 
   ngOnInit() {
@@ -58,14 +62,6 @@ export class EditOfferPage implements OnInit, OnDestroy {
             price: new FormControl(this.placeToBeEdited.price, {
               updateOn: "blur",
               validators: [Validators.required, Validators.min(49.9)]
-            }),
-            dateFrom: new FormControl(null, {
-              updateOn: "blur",
-              validators: [Validators.required]
-            }),
-            dateTo: new FormControl(null, {
-              updateOn: "blur",
-              validators: [Validators.required]
             })
           });
         });
@@ -78,7 +74,30 @@ export class EditOfferPage implements OnInit, OnDestroy {
       return;
     }
     // If the form is valid, tap the fields and make an update request
-    console.log(this.editForm.controls["title"].value);
+    // console.log(this.editForm.controls["title"].value);
+
+    // Fetch the place pertaining to the placeId first to update the offer
+    const { id } = this.placeToBeEdited;
+    const { title, description, price } = this.editForm.value;
+
+    // Create the loader with a message
+    this.loaderCtrl
+      .create({
+        message: `Updating ${this.placeToBeEdited.title}`
+      })
+      .then(loaderEl => {
+        // Present the loader
+        loaderEl.present();
+        this.placesService
+          .onUpdatePlace(id, title, description, +price)
+          .subscribe(() => {
+            loaderEl.dismiss();
+            //Reset the form
+            this.editForm.reset();
+            // Navigate to the /offers
+            this.router.navigateByUrl("/places/tabs/offers");
+          });
+      });
   }
 
   ngOnDestroy(): void {
