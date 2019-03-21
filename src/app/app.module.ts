@@ -14,7 +14,7 @@ import { AuthGuard } from './auth/auth-guard.guard';
   declarations: [AppComponent],
   entryComponents: [],
   imports: [BrowserModule, IonicModule.forRoot(), AppRoutingModule],
-providers: [
+  providers: [
     StatusBar,
     SplashScreen,
     AuthGuard,

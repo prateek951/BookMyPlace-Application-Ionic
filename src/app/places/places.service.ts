@@ -1,47 +1,89 @@
-import { Injectable } from '@angular/core';
-import { Place } from './place.model';
+import { Injectable } from "@angular/core";
+import { BehaviorSubject } from "rxjs";
+import { take, map } from "rxjs/operators";
+import { Place } from "./place.model";
+import { AuthService } from "./../auth/auth.service";
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: "root"
 })
 export class PlacesService {
-  //set up the mock data for the list of the places 
-  private _places:Place[] = [
-      new Place('p1','Manhattan Mansion',
-      'In the heart of the New York City',
-      'https://imgs.6sqft.com/wp-content/uploads/2014/06/21042537/harkness_mansion_gagosian.jpg'
-      ,149.9,
-      new Date('2019-01-01'),
-      new Date('2019-12-31')
-      ),
-      new Place('p2',
-      'Taj Mahal',
-      'An immense mausoleum of white marble, built in Agra between 1631 and 1648 by order of the Mughal emperor Shah Jahan in memory of his favourite wife, the Taj Mahal is the jewel of Muslim art in India and one of the universally admired masterpieces of the world heritage.'
-      ,'https://media.gettyimages.com/photos/diana-princess-of-wales-sits-in-front-of-the-taj-mahal-during-a-visit-picture-id79730657?s=612x612',
+  // set up the mock data for the list of the places
+  private _places = new BehaviorSubject<Place[]>([
+    new Place(
+      "p1",
+      "Manhattan Mansion",
+      "In the heart of the New York City",
+      "https://imgs.6sqft.com/wp-content/uploads/2014/06/21042537/harkness_mansion_gagosian.jpg",
+      149.9,
+      new Date("2019-01-01"),
+      new Date("2019-12-31"),
+      "dummy"
+    ),
+    new Place(
+      "p2",
+      "Taj Mahal",
+      "An immense mausoleum of white marble, built in Agra between 1631 and 1648 by order of the Mughal emperor Shah Jahan in memory of his favourite wife, the Taj Mahal is the jewel of Muslim art in India and one of the universally admired masterpieces of the world heritage.",
+      "https://media.gettyimages.com/photos/diana-princess-of-wales-sits-in-front-of-the-taj-mahal-during-a-visit-picture-id79730657?s=612x612",
       2099,
-      new Date('2019-01-01'),
-      new Date('2019-12-31')),
-      new Place('p3',
-      'The Foggy Palace',
-      'Not your average city trip'
-      ,'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRvUa3rPdQbwSfdVJ0G3fIOeHnA3vmghZheOTJwhSU_EO8cWeWUFg',
+      new Date("2019-01-01"),
+      new Date("2019-12-31"),
+      "dummy"
+    ),
+    new Place(
+      "p3",
+      "The Foggy Palace",
+      "Not your average city trip",
+      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRvUa3rPdQbwSfdVJ0G3fIOeHnA3vmghZheOTJwhSU_EO8cWeWUFg",
       99.99,
-      new Date('2019-01-01'),
-      new Date('2019-12-31'))
-  ];
+      new Date("2019-01-01"),
+      new Date("2019-12-31"),
+      "dummy"
+    )
+  ]);
+  constructor(private authService: AuthService) {}
+  // Utility method to fetch the list of all the mock places
 
-  //Utility method to fetch the list of all the mock places
-  
-  fetchPlaces() { 
-    return [...this._places];
+  fetchPlaces() {
+    return this._places.asObservable();
   }
 
-  //Utility method to fetch a specific place 
-  fetchPlace(id: string) { 
-    const place = this._places.find(p => p.id === id);
-    return Object.assign({},place);
+  // Utility method to fetch a specific place
+  fetchPlace(id: string) {
+    return this.fetchPlaces().pipe(
+      take(1),
+      map(places => {
+        const place = places.find(p => p.id === id);
+        return Object.assign({}, place);
+      })
+    );
   }
-  
 
-  constructor() { }
+  addPlace(
+    title: string,
+    description: string,
+    price: number,
+    dateFrom: Date,
+    dateTo: Date
+  ) {
+    // Create a new place
+    const newPlace = new Place(
+      Math.random().toString(),
+      title,
+      description,
+      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRvUa3rPdQbwSfdVJ0G3fIOeHnA3vmghZheOTJwhSU_EO8cWeWUFg",
+      price,
+      dateFrom,
+      dateTo,
+      this.authService.userId
+    );
+
+    // Add the new place to the list of the places
+    // Emit the new subject
+    this.fetchPlaces()
+      .pipe(take(1))
+      .subscribe(places => {
+        this._places.next(places.concat(newPlace));
+      });
+  }
 }

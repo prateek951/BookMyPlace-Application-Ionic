@@ -1,31 +1,50 @@
-import { Component, OnInit } from '@angular/core';
-import { PlacesService } from './../places.service';
-import { Place } from './../place.model';
-import { MenuController } from '@ionic/angular';
-import { SegmentChangeEventDetail } from '@ionic/core';
+import { Component, OnInit, OnDestroy } from "@angular/core";
+import { PlacesService } from "./../places.service";
+import { Place } from "./../place.model";
+import { MenuController } from "@ionic/angular";
+import { SegmentChangeEventDetail } from "@ionic/core";
+import { Subscription } from "rxjs";
 
 @Component({
-  selector: 'app-discover',
-  templateUrl: './discover.page.html',
-  styleUrls: ['./discover.page.scss'],
+  selector: "app-discover",
+  templateUrl: "./discover.page.html",
+  styleUrls: ["./discover.page.scss"]
 })
-export class DiscoverPage implements OnInit {
-  loadedPlaces : Place[];
-  // places that are not featured 
-  nonFeaturedPlaces: Place[];
+export class DiscoverPage implements OnInit, OnDestroy {
+  loadedPlaces: Place[];
 
-  constructor(private _placesService : PlacesService, private menuController: MenuController) { }
+  // Create a subscription
+  private placesSubscription: Subscription;
+
+  constructor(
+    private placesService: PlacesService,
+    private menuController: MenuController
+  ) {}
 
   ngOnInit() {
     // reach out to the service to get the list of the places
-    this.loadedPlaces = this._placesService.fetchPlaces();
-    this.nonFeaturedPlaces = this.loadedPlaces.filter(place => place.id !== this.loadedPlaces[1].id);
-    console.log(this.loadedPlaces);
+    // Store the subscription
+
+    this.placesSubscription = this.placesService
+      .fetchPlaces()
+      .subscribe(places => {
+        this.loadedPlaces = places;
+      });
+    // console.log(this.loadedPlaces);
   }
-  // onOpenMenu() { 
+  // onOpenMenu() {
   //   this.menuController.toggle();
   // }
   onFilterPlaces(e: CustomEvent<SegmentChangeEventDetail>) {
     console.log(e.detail);
+  }
+
+  ngOnDestroy(): void {
+    // Called once, before the instance is destroyed.
+    // Add 'implements OnDestroy' to the class.
+
+    if (this.placesSubscription) {
+      this.placesSubscription.unsubscribe();
+    }
   }
 }
