@@ -3,27 +3,33 @@
     <ion-buttons slot="start">
       <ion-back-button defaultHref="/places/tabs/discover"></ion-back-button>
     </ion-buttons>
-    <ion-title>{{loadedPlace.title}}</ion-title>
+    <ion-title>{{ loadedPlace.title }}</ion-title>
   </ion-toolbar>
 </ion-header>
 
-<ion-content padding>
-  <ion-grid>
-      <ion-row>
-          <ion-col size="12" size-sm="8" offset-sm="2" text-center>
-              <ion-card>
-                  <ion-card-header>
-                    <ion-card-title><h1>{{loadedPlace.title}}</h1></ion-card-title>
-                    <ion-card-subtitle>{{loadedPlace.price}}</ion-card-subtitle>
-                  </ion-card-header>
-                  <ion-img [src]="loadedPlace.imageUrl"></ion-img>
-                  <ion-card-content>
-                      <p>{{loadedPlace.description}}</p>
-                  </ion-card-content>
-                </ion-card>
-          </ion-col>
-      </ion-row>
+<ion-content>
+  <ion-grid no-padding>
+    <ion-row>
+      <ion-col size-sm="6" offset-sm="3" text-center no-padding>
+        <ion-card>
+          <ion-card-header>
+            <ion-card-title
+              ><h1>{{ loadedPlace.title }}</h1></ion-card-title
+            >
+            <ion-card-subtitle>{{ loadedPlace.price }}</ion-card-subtitle>
+          </ion-card-header>
+          <ion-img [src]="loadedPlace.imageUrl"></ion-img>
+          <ion-card-content>
+            <p>{{ loadedPlace.description }}</p>
+          </ion-card-content>
+        </ion-card>
+      </ion-col>
+    </ion-row>
+    <ion-row>
+      <ion-col size-sm="6" offset-sm="3" text-center no-padding>
+        <ion-button color="primary" margin (click)="onBookPlace()"
+          >Book</ion-button>
+      </ion-col>
+    </ion-row>
   </ion-grid>
-
-  <ion-button color="primary" margin (click)="onBookPlace()">Book</ion-button>
 </ion-content>

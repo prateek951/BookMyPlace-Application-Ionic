@@ -1,7 +1,9 @@
 //tslint:disable
 import { Component, OnInit, OnDestroy } from "@angular/core";
+import { Subscription } from "rxjs";
 import { ActivatedRoute, Router } from "@angular/router";
 import { PlacesService } from "./../../places.service";
+import { BookingService } from "./../../../bookings/booking.service";
 import { Place } from "../../place.model";
 import {
   NavController,
@@ -9,7 +11,7 @@ import {
   ActionSheetController
 } from "@ionic/angular";
 import { CreateBookingComponent } from "./../../../bookings/create-booking/create-booking.component";
-import { Subscription } from "rxjs";
+import { LoadingController } from '@ionic/angular';
 
 @Component({
   selector: "app-place-detail",
@@ -26,9 +28,11 @@ export class PlaceDetailPage implements OnInit, OnDestroy {
     private activatedRoute: ActivatedRoute,
     private router: Router,
     private placesService: PlacesService,
+    private bookingsService: BookingService,
     private navController: NavController,
     private modalController: ModalController,
-    private actionSheetController: ActionSheetController
+    private actionSheetController: ActionSheetController,
+    private loaderCtrl : LoadingController
   ) {}
   ngOnInit() {
     this.activatedRoute.paramMap.subscribe(paramMap => {
@@ -93,6 +97,27 @@ export class PlaceDetailPage implements OnInit, OnDestroy {
         }
         if (result.role === "confirm") {
           console.log(result.data);
+          // start the loading first 
+          this.loaderCtrl.create({
+            message : 'Booking your place.This can take some delay. Do not move back'
+          }).then(loaderEl => {
+           loaderEl.present();
+            // add a new booking
+          this.bookingsService.addBooking(
+            this.loadedPlace.id,
+            this.loadedPlace.title,
+            this.loadedPlace.imageUrl,
+            result.data.bookingData.firstName,
+            result.data.bookingData.lastName,
+            result.data.bookingData.guestNumber,
+            result.data.bookingData.startDate,
+            result.data.bookingData.endDate
+          ).subscribe(() => {
+            // dismiss the loader
+            loaderEl.dismiss();
+            //
+          });
+          })
         }
       });
   }
