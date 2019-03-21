@@ -48,7 +48,7 @@ export class BookingService {
     return this.bookings.pipe(
       take(1),
       //add a delay here
-      delay(1000),
+      delay(5000),
       tap(bookings => {
         //   Emit our old bookings along with the new one
         this._bookings.next(bookings.concat(newBooking));
@@ -57,6 +57,13 @@ export class BookingService {
   }
   // Utility method to cancel a booking pertaining to a bookingId
   cancelBooking(bookingId: string) {
-    console.log("inside the cancelBooking method");
+    // console.log("inside the cancelBooking method");
+    return this.bookings.pipe(
+      take(1),
+      delay(1000),
+      tap(bookings => {
+        this._bookings.next(bookings.filter(b => b.id !== bookingId));
+      })
+    );
   }
 }

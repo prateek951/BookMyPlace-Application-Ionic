@@ -4,6 +4,7 @@ import { BookingService } from "./booking.service";
 import { Booking } from "./booking.model";
 import { IonItemSliding } from "@ionic/angular";
 import { Subscription } from "rxjs";
+import { LoadingController } from "@ionic/angular";
 
 @Component({
   selector: "app-bookings",
@@ -16,7 +17,10 @@ export class BookingsPage implements OnInit, OnDestroy {
   // Create a books subscription
   private booksSubscription: Subscription;
 
-  constructor(private bookingService: BookingService) {}
+  constructor(
+    private bookingService: BookingService,
+    private loaderCtrl: LoadingController
+  ) {}
 
   ngOnInit() {
     this.booksSubscription = this.bookingService.bookings.subscribe(
@@ -29,6 +33,19 @@ export class BookingsPage implements OnInit, OnDestroy {
     // close
     slideAndDelete.close();
     // cancel booking pertaining to the id
+
+    this.loaderCtrl
+      .create({
+        message: `Booking ${id} is now gonna be removed`
+      })
+      .then(loaderEl => {
+        loaderEl.present();
+
+        this.bookingService.cancelBooking(id).subscribe(() => {
+          console.log("the booking is now removed");
+          loaderEl.dismiss();
+        });
+      });
   }
   ngOnDestroy() {
     if (this.booksSubscription) {
