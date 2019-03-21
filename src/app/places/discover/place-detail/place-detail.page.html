@@ -25,10 +25,10 @@
         </ion-card>
       </ion-col>
     </ion-row>
-    <ion-row>
+    <ion-row *ngIf="isBookable">
       <ion-col size-sm="6" offset-sm="3" text-center no-padding>
         <ion-button color="primary" margin (click)="onBookPlace()"
-          [disabled]="!isBookable">{{isBookable? 'Book' : 'Not bookable'}}</ion-button>
+          >Book</ion-button>
       </ion-col>
     </ion-row>
   </ion-grid>
