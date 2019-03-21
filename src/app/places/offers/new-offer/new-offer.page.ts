@@ -1,7 +1,8 @@
 import { Component, OnInit } from "@angular/core";
 import { FormGroup, FormControl, Validators } from "@angular/forms";
 import { PlacesService } from "./../../places.service";
-import { Router } from '@angular/router';
+import { Router } from "@angular/router";
+import { LoadingController } from "@ionic/angular";
 
 @Component({
   selector: "app-new-offer",
@@ -11,11 +12,16 @@ import { Router } from '@angular/router';
 export class NewOfferPage implements OnInit {
   // Set up the form group
   form: FormGroup;
-
-  constructor(private placesService: PlacesService, private router: Router) {}
+  // Set up the isLoading state
+  // isLoading: boolean = false;
+  constructor(
+    private placesService: PlacesService,
+    private router: Router,
+    private loaderController: LoadingController
+  ) {}
 
   onCreateOffer() {
-    console.log("inside the onCreateOffer component..");
+    // console.log("inside the onCreateOffer component..");
     if (this.form.invalid) {
       return;
     }
@@ -25,17 +31,30 @@ export class NewOfferPage implements OnInit {
     const { title, description, price, dateFrom, dateTo } = this.form.value;
     // console.log(title);
     // Create a new offer
-    this.placesService.addPlace(
-      title,
-      description,
-      Number(price),
-      new Date(dateFrom),
-      new Date(dateTo)
-    );
+    this.loaderController
+      .create({
+        message: `Creating ${title}..`
+      })
+      .then(loadingEl => {
+        loadingEl.present();
+        this.placesService
+          .addPlace(
+            title,
+            description,
+            parseFloat(price),
+            new Date(dateFrom),
+            new Date(dateTo)
+          )
+          .subscribe(() => {
+            // Dismiss the overlay
+            loadingEl.dismiss();
+            // Set isLoading to false
 
-    // Reset the form
-    this.form.reset();
-    this.router.navigateByUrl('/places/tabs/offers');
+            // Reset the form and navigate
+            this.form.reset();
+            this.router.navigateByUrl("/places/tabs/offers");
+          });
+      });
   }
 
   ngOnInit() {

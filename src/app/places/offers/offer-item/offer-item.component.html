@@ -6,10 +6,10 @@
     <span class="offer__title">{{offer.title}}</span>
     <div class="offer-details">
       <ion-icon name="calendar" color="tertiary" class="small__text"></ion-icon>
-      <ion-text class="space-left small__text" color="primary">{{getDummyDate() | date}}</ion-text>
+      <ion-text class="space-left small__text" color="primary">{{offer.availableFrom | date}}</ion-text>
       <span class="space-left">to</span>
       <ion-icon name="calendar" color="tertiary" class="space-left small__text"></ion-icon>
-      <ion-text color="primary" class="space-left small__text">{{getDummyDate() | date}}</ion-text>
+      <ion-text color="primary" class="space-left small__text">{{offer.availableTo | date}}</ion-text>
     </div>
   </ion-label>
 
