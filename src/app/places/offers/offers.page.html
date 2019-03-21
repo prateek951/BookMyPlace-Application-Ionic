@@ -15,17 +15,27 @@
 <ion-content padding>
   <ion-grid>
     <ion-row>
-      <ion-col size="12" size-sm="8" offset-sm="2" text-center> 
-          <ion-list>
-            <ion-item-sliding *ngFor="let offer of loadedOffers" #slideNavigate>
-              <app-offer-item [offer]="offer"></app-offer-item>
-              <ion-item-options side="end">
-                <ion-item-option color="tertiary" (click)="onEdit(offer.id, slideNavigate)" >
-                  <ion-icon name="create" slot="icon-only"></ion-icon>
-                </ion-item-option>
-              </ion-item-options>
-            </ion-item-sliding>
-          </ion-list>
+      <ion-col size="12" size-sm="8" offset-sm="2" text-center>
+        <div *ngIf="isLoading" text-center>
+          <ion-spinner color="primary"></ion-spinner>
+        </div>
+        <div text-center *ngIf="!isLoading && loadedOffers.length <= 0">
+            <p>No offers found! Create one.</p>
+            <ion-button color="tertiary" routerLink="/places/tabs/offers/new">Offer New Place</ion-button>
+        </div>
+        <ion-list *ngIf="!isLoading && loadedOffers.length > 0">
+          <ion-item-sliding *ngFor="let offer of loadedOffers" #slideNavigate>
+            <app-offer-item [offer]="offer"></app-offer-item>
+            <ion-item-options side="end">
+              <ion-item-option
+                color="tertiary"
+                (click)="onEdit(offer.id, slideNavigate)"
+              >
+                <ion-icon name="create" slot="icon-only"></ion-icon>
+              </ion-item-option>
+            </ion-item-options>
+          </ion-item-sliding>
+        </ion-list>
       </ion-col>
     </ion-row>
   </ion-grid>

@@ -11,6 +11,8 @@ import { Subscription } from "rxjs";
 })
 export class OffersPage implements OnInit, OnDestroy {
   loadedOffers: Place[];
+  isLoading = false;
+  
   // To avoid the memory leaks, clear the subscription
   private placesSubscription: Subscription;
 
@@ -26,7 +28,13 @@ export class OffersPage implements OnInit, OnDestroy {
         this.loadedOffers = places;
       });
   }
-
+  ionViewWillEnter() { 
+    this.isLoading = true;
+    this.placesService.getOfferedPlaces()
+      .subscribe(() => { 
+        this.isLoading = false;
+      });
+  }
   onEdit(id: string, slidingNavigate: IonItemSliding) {
     slidingNavigate.close();
     this.router.navigate(["/", "places", "tabs", "offers", "edit", id]);

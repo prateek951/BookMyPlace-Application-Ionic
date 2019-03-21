@@ -5,45 +5,23 @@ import { take, map, tap, delay, switchMap } from "rxjs/operators";
 import { Place } from "./place.model";
 import { AuthService } from "./../auth/auth.service";
 import { HttpClient } from "@angular/common/http";
-import { switchMap } from "rxjs/operators";
+
+interface PlaceData {
+  availableFrom: string;
+  availableTo: string;
+  description: string;
+  imageUrl: string;
+  price: number;
+  title: string;
+  userId: string;
+}
 
 @Injectable({
   providedIn: "root"
 })
 export class PlacesService {
   // set up the mock data for the list of the places
-  private _places = new BehaviorSubject<Place[]>([
-    new Place(
-      "p1",
-      "Manhattan Mansion",
-      "In the heart of the New York City",
-      "https://imgs.6sqft.com/wp-content/uploads/2014/06/21042537/harkness_mansion_gagosian.jpg",
-      149.9,
-      new Date("2019-01-01"),
-      new Date("2019-12-31"),
-      "dummy"
-    ),
-    new Place(
-      "p2",
-      "Taj Mahal",
-      "An immense mausoleum of white marble, built in Agra between 1631 and 1648 by order of the Mughal emperor Shah Jahan in memory of his favourite wife, the Taj Mahal is the jewel of Muslim art in India and one of the universally admired masterpieces of the world heritage.",
-      "https://media.gettyimages.com/photos/diana-princess-of-wales-sits-in-front-of-the-taj-mahal-during-a-visit-picture-id79730657?s=612x612",
-      2099,
-      new Date("2019-01-01"),
-      new Date("2019-12-31"),
-      "abc"
-    ),
-    new Place(
-      "p3",
-      "The Foggy Palace",
-      "Not your average city trip",
-      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRvUa3rPdQbwSfdVJ0G3fIOeHnA3vmghZheOTJwhSU_EO8cWeWUFg",
-      99.99,
-      new Date("2019-01-01"),
-      new Date("2019-12-31"),
-      "abc"
-    )
-  ]);
+  private _places = new BehaviorSubject<Place[]>([]);
   constructor(
     private authService: AuthService,
     private httpClient: HttpClient
@@ -52,6 +30,38 @@ export class PlacesService {
 
   fetchPlaces() {
     return this._places.asObservable();
+  }
+
+  getOfferedPlaces() {
+    return this.httpClient
+      .get<{ [key: string]: PlaceData }>(
+        "https://awesome-places-562a3.firebaseio.com/offered-places.json"
+      )
+      .pipe(
+        map(resData => {
+          // console.log(resData);
+          const places = [];
+          Object.keys(resData).forEach(key => {
+            let k = key;
+            places.push(
+              new Place(
+                key,
+                resData[k].title,
+                resData[k].description,
+                resData[k].imageUrl,
+                resData[k].price,
+                new Date(resData[k].availableFrom),
+                new Date(resData[k].availableTo),
+                resData[k].userId
+              )
+            );
+          });
+          return places;
+        }),
+        tap(places => {
+          this._places.next(places);
+        })
+      );
   }
 
   // Utility method to fetch a specific place
@@ -101,7 +111,7 @@ export class PlacesService {
         }),
         take(1),
         delay(1000),
-        tap(places =>  {
+        tap(places => {
           newPlace.id = genId;
           this._places.next(places.concat(newPlace));
         })
