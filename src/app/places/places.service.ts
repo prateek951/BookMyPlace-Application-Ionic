@@ -1,8 +1,11 @@
+//tslint:disable
 import { Injectable } from "@angular/core";
 import { BehaviorSubject } from "rxjs";
-import { take, map, tap, delay } from "rxjs/operators";
+import { take, map, tap, delay, switchMap } from "rxjs/operators";
 import { Place } from "./place.model";
 import { AuthService } from "./../auth/auth.service";
+import { HttpClient } from "@angular/common/http";
+import { switchMap } from "rxjs/operators";
 
 @Injectable({
   providedIn: "root"
@@ -41,7 +44,10 @@ export class PlacesService {
       "abc"
     )
   ]);
-  constructor(private authService: AuthService) {}
+  constructor(
+    private authService: AuthService,
+    private httpClient: HttpClient
+  ) {}
   // Utility method to fetch the list of all the mock places
 
   fetchPlaces() {
@@ -67,6 +73,7 @@ export class PlacesService {
     dateTo: Date
   ) {
     // Create a new place
+    let genId: string;
     const newPlace = new Place(
       Math.random().toString(),
       title,
@@ -78,15 +85,37 @@ export class PlacesService {
       this.authService.userId
     );
 
+    // Create a new place onto the backend server
+    return this.httpClient
+      .post<{ name: string }>(
+        "https://awesome-places-562a3.firebaseio.com/offered-places.json",
+        {
+          ...newPlace,
+          id: null
+        }
+      )
+      .pipe(
+        switchMap(resData => {
+          genId = resData.name;
+          return this.fetchPlaces();
+        }),
+        take(1),
+        delay(1000),
+        tap(places =>  {
+          newPlace.id = genId;
+          this._places.next(places.concat(newPlace));
+        })
+      );
+
     // Add the new place to the list of the places
     // Emit the new subject
-    return this.fetchPlaces().pipe(
-      take(1),
-      delay(1000),
-      tap(places => {
-        this._places.next(places.concat(newPlace));
-      })
-    );
+    // return this.fetchPlaces().pipe(
+    //   take(1),
+    //   delay(1000),
+    //   tap(places => {
+    //     this._places.next(places.concat(newPlace));
+    //   })
+    // );
   }
 
   onUpdatePlace(
