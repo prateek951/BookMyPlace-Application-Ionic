@@ -15,6 +15,8 @@ import { AuthService } from "./../../auth/auth.service";
 export class DiscoverPage implements OnInit, OnDestroy {
   loadedPlaces: Place[];
   relevantPlaces: Place[];
+  isLoading: boolean = false;
+
   // Create a subscription
   private placesSubscription: Subscription;
 
@@ -38,6 +40,13 @@ export class DiscoverPage implements OnInit, OnDestroy {
   // onOpenMenu() {
   //   this.menuController.toggle();
   // }
+  ionViewWillEnter() {
+    this.isLoading = true;
+    this.placesService.fetchPlaces().subscribe(() => {
+      this.isLoading = false;
+    });
+  }
+
   onFilterPlaces(e: CustomEvent<SegmentChangeEventDetail>) {
     // console.log(e.detail);
     if (e.detail.value === "all") {

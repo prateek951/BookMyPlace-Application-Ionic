@@ -3,7 +3,7 @@
 import { Component, OnInit, OnDestroy } from "@angular/core";
 import { Place } from "./../../place.model";
 import { PlacesService } from "./../../places.service";
-import { NavController } from "@ionic/angular";
+import { NavController, AlertController } from "@ionic/angular";
 import { ActivatedRoute } from "@angular/router";
 import { FormGroup, FormControl, Validators } from "@angular/forms";
 import { Subscription } from "rxjs";
@@ -19,7 +19,8 @@ export class EditOfferPage implements OnInit, OnDestroy {
   // Set the form group
   editForm: FormGroup;
   placeToBeEdited: Place;
-
+  isLoading: boolean = false;
+  placeId: string;
   // Create a place subscription
   private placeSubscription: Subscription;
 
@@ -28,7 +29,8 @@ export class EditOfferPage implements OnInit, OnDestroy {
     private placesService: PlacesService,
     private navController: NavController,
     private router: Router,
-    private loaderCtrl: LoadingController
+    private loaderCtrl: LoadingController,
+    private alertCtrl: AlertController
   ) {}
 
   ngOnInit() {
@@ -40,33 +42,55 @@ export class EditOfferPage implements OnInit, OnDestroy {
         this.navController.navigateBack("/places/tabs/offers");
         return;
       }
+      this.placeId = paramMap.get("placeId");
+      // Set isLoading to true
+      this.isLoading = true;
       // If we have the placeId then get that place from the url params
       this.placeSubscription = this.placesService
         .fetchPlace(paramMap.get("placeId"))
-        .subscribe(place => {
-          this.placeToBeEdited = place;
-          this.editForm = new FormGroup({
-            // Set the form controls
-            title: new FormControl(this.placeToBeEdited.title, {
-              updateOn: "blur",
-              validators: [Validators.required]
-            }),
-            description: new FormControl(this.placeToBeEdited.description, {
-              updateOn: "blur",
-              validators: [
-                Validators.required,
-                Validators.minLength(5),
-                Validators.maxLength(180)
+        .subscribe(
+          place => {
+            this.placeToBeEdited = place;
+            this.editForm = new FormGroup({
+              // Set the form controls
+              title: new FormControl(this.placeToBeEdited.title, {
+                updateOn: "blur",
+                validators: [Validators.required]
+              }),
+              description: new FormControl(this.placeToBeEdited.description, {
+                updateOn: "blur",
+                validators: [
+                  Validators.required,
+                  Validators.minLength(5),
+                  Validators.maxLength(180)
+                ]
+              }),
+              price: new FormControl(this.placeToBeEdited.price, {
+                updateOn: "blur",
+                validators: [Validators.required, Validators.min(49.9)]
+              })
+            });
+            this.isLoading = false;
+          },
+          error => {
+            this.alertCtrl.create({ 
+              header: 'An error occurred',
+              message: 'Place could not be fetched. Please try again later ',
+              buttons: [
+                {
+                  text : 'OK',
+                  handler: () =>  { 
+                    this.router.navigateByUrl('/places/tabs/offers');
+                  }
+                }
               ]
-            }),
-            price: new FormControl(this.placeToBeEdited.price, {
-              updateOn: "blur",
-              validators: [Validators.required, Validators.min(49.9)]
+            }).then(alertEl => {
+              alertEl.present();
             })
           });
         });
-    });
-  }
+    }
+    
   onUpdateOffer() {
     console.log("Updating the offer...");
     // Check whether the form is valid, if invalid return

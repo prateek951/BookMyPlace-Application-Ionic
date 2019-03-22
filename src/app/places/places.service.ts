@@ -1,6 +1,6 @@
 //tslint:disable
 import { Injectable } from "@angular/core";
-import { BehaviorSubject } from "rxjs";
+import { BehaviorSubject, of } from "rxjs";
 import { take, map, tap, delay, switchMap } from "rxjs/operators";
 import { Place } from "./place.model";
 import { AuthService } from "./../auth/auth.service";
@@ -66,13 +66,32 @@ export class PlacesService {
 
   // Utility method to fetch a specific place
   fetchPlace(id: string) {
-    return this.fetchPlaces().pipe(
-      take(1),
-      map(places => {
-        const place = places.find(p => p.id === id);
-        return Object.assign({}, place);
-      })
-    );
+    return this.httpClient
+      .get<PlaceData>(
+        `https://awesome-places-562a3.firebaseio.com/offered-places/${id}.json`
+      )
+      .pipe(
+        map(resData => {
+          return new Place(
+            id,
+            resData.title,
+            resData.description,
+            resData.imageUrl,
+            resData.price,
+            new Date(resData.availableFrom),
+            new Date(resData.availableTo),
+            resData.userId
+          );
+        })
+      );
+
+    // this.fetchPlaces().pipe(
+    //   take(1),
+    //   map(places => {
+    //     const place = places.find(p => p.id === id);
+    //     return Object.assign({}, place);
+    //   })
+    // );
   }
 
   addPlace(
@@ -134,11 +153,18 @@ export class PlacesService {
     description: string,
     price: number
   ) {
-    let updatedPlaces:Place[];
+    let updatedPlaces: Place[];
     return this.fetchPlaces().pipe(
       take(1),
       delay(1000),
       switchMap(places => {
+        if (!places || places.length <= 0) {
+          return this.getOfferedPlaces();
+        } else {
+          return of(places);
+        }
+      }),
+      switchMap(places => { 
         const updatedPlaceIndex = places.findIndex(p => p.id === placeId);
         updatedPlaces = [...places];
         const oldPlace = updatedPlaces[updatedPlaceIndex];
@@ -160,13 +186,12 @@ export class PlacesService {
             id: null
           }
         );
-      }),
-      tap(() => {         
+      }), 
+      tap(() => {
         //  Get the latest snapshot of the data using take
         // Commit the latest changes
         this._places.next(updatedPlaces);
       })
     );
-
   }
 }
