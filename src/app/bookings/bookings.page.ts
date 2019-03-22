@@ -13,7 +13,7 @@ import { LoadingController } from "@ionic/angular";
 })
 export class BookingsPage implements OnInit, OnDestroy {
   loadedBookings: Booking[];
-
+  isLoading: boolean = false;
   // Create a books subscription
   private booksSubscription: Subscription;
 
@@ -29,6 +29,19 @@ export class BookingsPage implements OnInit, OnDestroy {
       }
     );
   }
+
+  ionViewWillEnter() { 
+    ///set the isLoading property 
+    this.isLoading = true;
+    this.bookingService.fetchBookings()
+      .subscribe(() => { 
+        // dismiss the spinner 
+        this.isLoading = false;
+          
+      })
+  }
+
+
   onCancelBooking(id: string, slideAndDelete: IonItemSliding) {
     // close
     slideAndDelete.close();
@@ -49,6 +62,7 @@ export class BookingsPage implements OnInit, OnDestroy {
   }
   ngOnDestroy() {
     if (this.booksSubscription) {
+
       // clear the books subscription
       this.booksSubscription.unsubscribe();
     }

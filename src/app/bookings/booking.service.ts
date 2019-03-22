@@ -3,9 +3,22 @@ import { Injectable } from "@angular/core";
 import { Booking } from "./booking.model";
 import { BehaviorSubject } from "rxjs";
 import { AuthService } from "./../auth/auth.service";
-import { tap, take, delay, switchMap } from "rxjs/operators";
+import { tap, take, delay, switchMap, map } from "rxjs/operators";
 import { HttpClient } from "@angular/common/http";
-import { switchMap } from "rxjs/operators";
+
+// Interface for the BookingData that we get 
+interface BookingData { 
+  bookedFrom: string;
+  bookedTo:string;
+  firstName: string;
+  guestNumber: string;
+  lastName: string;
+  placeId: string;
+  placeImage: string;
+  placeTitle : string;
+  userId : string;
+}
+
 @Injectable({
   providedIn: "root"
 })
@@ -48,17 +61,20 @@ export class BookingService {
     );
 
     return this.http
-      .post<{name:string}>("https://awesome-places-562a3.firebaseio.com/bookings.json", {
-        ...newBooking,
-        id: null
-      })
+      .post<{ name: string }>(
+        "https://awesome-places-562a3.firebaseio.com/bookings.json",
+        {
+          ...newBooking,
+          id: null
+        }
+      )
       .pipe(
         switchMap(resData => {
           genId = resData.name;
           return this.bookings;
         }),
         take(1),
-        tap(bookings => { 
+        tap(bookings => {
           newBooking.id = genId;
           //   Emit our old bookings along with the new one
           this._bookings.next(bookings.concat(newBooking));
@@ -69,6 +85,7 @@ export class BookingService {
   cancelBooking(bookingId: string) {
     // console.log("inside the cancelBooking method");
     return this.bookings.pipe(
+      // operator functions
       take(1),
       delay(1000),
       tap(bookings => {
@@ -76,4 +93,38 @@ export class BookingService {
       })
     );
   }
+  fetchBookings() {
+    // Fetch only our bookings and not all the bookings
+    return this.http
+      .get<{[key: string] : BookingData}>(
+        `https://awesome-places-562a3.firebaseio.com/bookings.json?orderBy="userId"&equalTo="${
+          this.authService.userId
+        }"`
+      )
+      .pipe(map(resData => {
+        const bookings = [];
+        // console.log(typeof resData);
+        Object.keys(resData).forEach(k => {
+          let key = k;
+          bookings.push(
+            new Booking(
+              key,
+              resData[key].placeId,
+              resData[key].userId,
+              resData[key].placeTitle,
+              resData[key].placeImage,
+              resData[key].firstName,
+              resData[key].lastName,
+              Number(resData[key].guestNumber),
+              new Date(resData[key].bookedFrom),
+              new Date(resData[key].bookedTo)
+            )
+          );
+        });
+        return bookings;
+      }),tap(bookings => { 
+        this._bookings.next(bookings);
+      }));
+  }
 }
+
