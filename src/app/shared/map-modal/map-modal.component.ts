@@ -43,6 +43,17 @@ export class MapModalComponent implements OnInit, AfterViewInit {
         gmSDK.event.addListenerOnce(map, "idle", () => {
           this.renderer.addClass(mapEl, "visible");
         });
+
+        // Picking locations via  a click on the map
+        map.addListener("click", event => {
+          // on the click we select the coordinates
+          const coords = {
+            lat: event.latLng.lat(),
+            lng: event.latLng.lng()
+          };
+          // pass the coords
+          this.modalCtrl.dismiss(coords);
+        });
       })
       .catch(err => {
         console.log(err);
