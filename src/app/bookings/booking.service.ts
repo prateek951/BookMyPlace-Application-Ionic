@@ -6,17 +6,17 @@ import { AuthService } from "./../auth/auth.service";
 import { tap, take, delay, switchMap, map } from "rxjs/operators";
 import { HttpClient } from "@angular/common/http";
 
-// Interface for the BookingData that we get 
-interface BookingData { 
+// Interface for the BookingData that we get
+interface BookingData {
   bookedFrom: string;
-  bookedTo:string;
+  bookedTo: string;
   firstName: string;
   guestNumber: string;
   lastName: string;
   placeId: string;
   placeImage: string;
-  placeTitle : string;
-  userId : string;
+  placeTitle: string;
+  userId: string;
 }
 
 @Injectable({
@@ -84,48 +84,64 @@ export class BookingService {
   // Utility method to cancel a booking pertaining to a bookingId
   cancelBooking(bookingId: string) {
     // console.log("inside the cancelBooking method");
-    
-    return this.bookings.pipe(
-      // operator functions
-      take(1),
-      delay(1000),
-      tap(bookings => {
-        this._bookings.next(bookings.filter(b => b.id !== bookingId));
-      })
-    );
+    return this.http
+      .delete(
+        `https://awesome-places-562a3.firebaseio.com/bookings/${bookingId}.json`
+      )
+      .pipe(
+        // Here will go the series of the operator functions that we want
+        switchMap(() => {
+          return this.bookings;
+        }),
+        take(1),
+        tap(bookings => {
+          //Emit the new list of the bookings and update locally
+          this._bookings.next(bookings.filter(b => b.id !== bookingId));
+        })
+      );
+    // return this.bookings.pipe(
+    //   // operator functions
+    //   take(1),
+    //   delay(1000),
+    //   tap(bookings => {
+    //     this._bookings.next(bookings.filter(b => b.id !== bookingId));
+    //   })
+    // );
   }
   fetchBookings() {
     // Fetch only our bookings and not all the bookings
     return this.http
-      .get<{[key: string] : BookingData}>(
+      .get<{ [key: string]: BookingData }>(
         `https://awesome-places-562a3.firebaseio.com/bookings.json?orderBy="userId"&equalTo="${
           this.authService.userId
         }"`
       )
-      .pipe(map(resData => {
-        const bookings = [];
-        // console.log(typeof resData);
-        Object.keys(resData).forEach(k => {
-          let key = k;
-          bookings.push(
-            new Booking(
-              key,
-              resData[key].placeId,
-              resData[key].userId,
-              resData[key].placeTitle,
-              resData[key].placeImage,
-              resData[key].firstName,
-              resData[key].lastName,
-              Number(resData[key].guestNumber),
-              new Date(resData[key].bookedFrom),
-              new Date(resData[key].bookedTo)
-            )
-          );
-        });
-        return bookings;
-      }),tap(bookings => { 
-        this._bookings.next(bookings);
-      }));
+      .pipe(
+        map(resData => {
+          const bookings = [];
+          // console.log(typeof resData);
+          Object.keys(resData).forEach(k => {
+            let key = k;
+            bookings.push(
+              new Booking(
+                key,
+                resData[key].placeId,
+                resData[key].userId,
+                resData[key].placeTitle,
+                resData[key].placeImage,
+                resData[key].firstName,
+                resData[key].lastName,
+                Number(resData[key].guestNumber),
+                new Date(resData[key].bookedFrom),
+                new Date(resData[key].bookedTo)
+              )
+            );
+          });
+          return bookings;
+        }),
+        tap(bookings => {
+          this._bookings.next(bookings);
+        })
+      );
   }
 }
-
