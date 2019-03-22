@@ -6,16 +6,18 @@ import {
   AfterViewInit,
   ViewChild,
   ElementRef,
-  Renderer2
+  Renderer2,
+  OnDestroy
 } from "@angular/core";
-import { ModalController,AlertController } from "@ionic/angular";
+import { ModalController, AlertController } from "@ionic/angular";
 import { environment } from "../../../environments/environment";
+
 @Component({
   selector: "app-map-modal",
   templateUrl: "./map-modal.component.html",
   styleUrls: ["./map-modal.component.scss"]
 })
-export class MapModalComponent implements OnInit, AfterViewInit {
+export class MapModalComponent implements OnInit, AfterViewInit, OnDestroy {
   constructor(
     private modalCtrl: ModalController,
     private alertCtrl: AlertController,
@@ -23,6 +25,8 @@ export class MapModalComponent implements OnInit, AfterViewInit {
   ) {}
   // Setting up the local ref
   @ViewChild("map") mapElRef: ElementRef;
+  googleMaps:any;
+  clickListener: any;
 
   ngOnInit() {}
   ngAfterViewInit(): void {
@@ -30,6 +34,9 @@ export class MapModalComponent implements OnInit, AfterViewInit {
     //Add 'implements AfterViewInit' to the class.
     this.renderGoogleMapUtils()
       .then(gmSDK => {
+        
+        this.googleMaps = gmSDK;
+        
         //Render the google map
         const mapEl = this.mapElRef.nativeElement;
         const map = new gmSDK.Map(mapEl, {
@@ -44,7 +51,7 @@ export class MapModalComponent implements OnInit, AfterViewInit {
         });
 
         // Picking locations via  a click on the map
-        map.addListener("click", event => {
+        this.clickListener = map.addListener("click", event => {
           // on the click we select the coordinates
           const coords = {
             lat: event.latLng.lat(),
@@ -88,5 +95,10 @@ export class MapModalComponent implements OnInit, AfterViewInit {
   }
   onCancel() {
     this.modalCtrl.dismiss();
+  }
+  ngOnDestroy(): void {
+    //Called once, before the instance is destroyed.
+    //Add 'implements OnDestroy' to the class.
+    this.googleMaps.event.removeListener(this.clickListener);
   }
 }

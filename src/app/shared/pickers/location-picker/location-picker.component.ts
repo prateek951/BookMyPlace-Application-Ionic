@@ -1,12 +1,12 @@
 //tslint:disable
-import { Component, OnInit } from "@angular/core";
+import { Component, OnInit, Output, EventEmitter } from "@angular/core";
 import { ModalController } from "@ionic/angular";
 import { MapModalComponent } from "./../../map-modal/map-modal.component";
 import { HttpClient } from "@angular/common/http";
 import { environment } from "./../../../../environments/environment";
 import { map } from "rxjs/operators";
 import { switchMap } from "rxjs/operators";
-import { PlaceLocation } from "src/app/places/location.model";
+import { PlaceLocation } from "../../../places/location.model";
 import { of } from "rxjs";
 @Component({
   selector: "app-location-picker",
@@ -16,6 +16,11 @@ import { of } from "rxjs";
 export class LocationPickerComponent implements OnInit {
   selectedLocationImage: string;
   isLoading = false;
+
+  //setup the event emitter
+
+  @Output() locationPicked = new EventEmitter<PlaceLocation>();
+
   constructor(
     private modalCtrl: ModalController,
     private httpClient: HttpClient
@@ -63,6 +68,7 @@ export class LocationPickerComponent implements OnInit {
               pickedLocation.staticImageUrl = staticImageUrl;
               this.selectedLocationImage = staticImageUrl;
               this.isLoading = false;
+              this.locationPicked.emit(pickedLocation);
             });
         });
         modalEl.present();

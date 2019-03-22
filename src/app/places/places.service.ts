@@ -5,6 +5,7 @@ import { take, map, tap, delay, switchMap } from "rxjs/operators";
 import { Place } from "./place.model";
 import { AuthService } from "./../auth/auth.service";
 import { HttpClient } from "@angular/common/http";
+import { PlaceLocation } from './location.model';
 
 interface PlaceData {
   availableFrom: string;
@@ -14,6 +15,7 @@ interface PlaceData {
   price: number;
   title: string;
   userId: string;
+  location: PlaceLocation
 }
 
 @Injectable({
@@ -52,7 +54,8 @@ export class PlacesService {
                 resData[k].price,
                 new Date(resData[k].availableFrom),
                 new Date(resData[k].availableTo),
-                resData[k].userId
+                resData[k].userId,
+                resData[k].location 
               )
             );
           });
@@ -80,7 +83,8 @@ export class PlacesService {
             resData.price,
             new Date(resData.availableFrom),
             new Date(resData.availableTo),
-            resData.userId
+            resData.userId,
+            resData.location
           );
         })
       );
@@ -99,7 +103,8 @@ export class PlacesService {
     description: string,
     price: number,
     dateFrom: Date,
-    dateTo: Date
+    dateTo: Date,
+    location: PlaceLocation
   ) {
     // Create a new place
     let genId: string;
@@ -111,7 +116,8 @@ export class PlacesService {
       price,
       dateFrom,
       dateTo,
-      this.authService.userId
+      this.authService.userId,
+      location
     );
 
     // Create a new place onto the backend server
@@ -164,7 +170,7 @@ export class PlacesService {
           return of(places);
         }
       }),
-      switchMap(places => { 
+      switchMap(places => {
         const updatedPlaceIndex = places.findIndex(p => p.id === placeId);
         updatedPlaces = [...places];
         const oldPlace = updatedPlaces[updatedPlaceIndex];
@@ -177,7 +183,8 @@ export class PlacesService {
           price,
           oldPlace.availableFrom,
           oldPlace.availableTo,
-          oldPlace.userId
+          oldPlace.userId,
+          oldPlace.location
         );
         return this.httpClient.put(
           `https://awesome-places-562a3.firebaseio.com/offered-places/${placeId}.json`,
@@ -186,7 +193,7 @@ export class PlacesService {
             id: null
           }
         );
-      }), 
+      }),
       tap(() => {
         //  Get the latest snapshot of the data using take
         // Commit the latest changes
