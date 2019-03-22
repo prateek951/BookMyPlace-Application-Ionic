@@ -14,6 +14,7 @@ import { CreateBookingComponent } from "./../../../bookings/create-booking/creat
 import { LoadingController } from "@ionic/angular";
 import { AuthService } from "./../../../auth/auth.service";
 import { AlertController } from "@ionic/angular";
+import { MapModalComponent } from "./../../../shared/map-modal/map-modal.component";
 
 @Component({
   selector: "app-place-detail",
@@ -158,7 +159,24 @@ export class PlaceDetailPage implements OnInit, OnDestroy {
         }
       });
   }
-
+  onOpenMapModal() {
+    this.modalController
+      .create({
+        component: MapModalComponent,
+        componentProps: {
+          center: {
+            lat: this.loadedPlace.location.lat,
+            lng: this.loadedPlace.location.lng
+          },
+          selectable : false,
+          closeButtonText: 'Close',
+          title : this.loadedPlace.location.address
+        }
+      })
+      .then(modalEl => {
+        modalEl.present();
+      });
+  }
   // Clear the subscription to avoid memory leaks
   ngOnDestroy() {
     if (this.placeSubscription) {
