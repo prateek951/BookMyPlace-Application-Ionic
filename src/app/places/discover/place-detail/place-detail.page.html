@@ -3,12 +3,17 @@
     <ion-buttons slot="start">
       <ion-back-button defaultHref="/places/tabs/discover"></ion-back-button>
     </ion-buttons>
-    <ion-title>{{ loadedPlace.title }}</ion-title>
+    <ion-title>{{ isLoading? 'Loading...' : loadedPlace.title }}</ion-title>
   </ion-toolbar>
 </ion-header>
 
 <ion-content>
-  <ion-grid no-padding>
+  <!-- if we are loading that means we haven't got the data yet -->
+  <div *ngIf="isLoading" text-center>
+    <ion-spinner color="tertiary"></ion-spinner>
+  </div>
+
+  <ion-grid no-padding *ngIf="!isLoading && loadedPlace">
     <ion-row>
       <ion-col size-sm="6" offset-sm="3" text-center no-padding>
         <ion-card>
@@ -28,7 +33,8 @@
     <ion-row *ngIf="isBookable">
       <ion-col size-sm="6" offset-sm="3" text-center no-padding>
         <ion-button color="primary" margin (click)="onBookPlace()"
-          >Book</ion-button>
+          >Book</ion-button
+        >
       </ion-col>
     </ion-row>
   </ion-grid>

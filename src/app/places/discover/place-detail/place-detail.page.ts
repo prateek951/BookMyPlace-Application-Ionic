@@ -11,8 +11,9 @@ import {
   ActionSheetController
 } from "@ionic/angular";
 import { CreateBookingComponent } from "./../../../bookings/create-booking/create-booking.component";
-import { LoadingController } from '@ionic/angular';
-import { AuthService } from './../../../auth/auth.service';
+import { LoadingController } from "@ionic/angular";
+import { AuthService } from "./../../../auth/auth.service";
+import { AlertController } from "@ionic/angular";
 
 @Component({
   selector: "app-place-detail",
@@ -21,7 +22,8 @@ import { AuthService } from './../../../auth/auth.service';
 })
 export class PlaceDetailPage implements OnInit, OnDestroy {
   loadedPlace: Place;
-  isBookable:boolean = false;
+  isBookable: boolean = false;
+  isLoading: boolean = false;
   // Setup the subscription
   private placeSubscription: Subscription;
 
@@ -34,7 +36,8 @@ export class PlaceDetailPage implements OnInit, OnDestroy {
     private navController: NavController,
     private modalController: ModalController,
     private actionSheetController: ActionSheetController,
-    private loaderCtrl : LoadingController
+    private loaderCtrl: LoadingController,
+    private alertCtrl: AlertController
   ) {}
   ngOnInit() {
     this.activatedRoute.paramMap.subscribe(paramMap => {
@@ -48,14 +51,38 @@ export class PlaceDetailPage implements OnInit, OnDestroy {
 
       // Store the subscription
 
-      this.placeSubscription = this.placesService
-        .fetchPlace(placeId)
-        .subscribe(place => {
+      // Set the isLoading to true
+      this.isLoading = true;
+      this.placeSubscription = this.placesService.fetchPlace(placeId).subscribe(
+        place => {
           this.loadedPlace = place;
-          if(this.loadedPlace.userId !== this.authService.userId) { 
+
+          // Once we are done fetching set isLoading to false
+          this.isLoading = false;
+          if (this.loadedPlace.userId !== this.authService.userId) {
             this.isBookable = true;
           }
-        });
+        },
+        error => {
+          this.alertCtrl
+            .create({
+              header: "An error occurred",
+              message:
+                "Failed to fetch the place details.Please try again later",
+              buttons: [
+                {
+                  text: "Ok",
+                  handler: () => {
+                    this.router.navigateByUrl("/places/tabs/discover");
+                  }
+                }
+              ]
+            })
+            .then(alertEl => {
+              alertEl.present();
+            });
+        }
+      );
       // console.log(this.loadedPlace);
     });
   }
@@ -102,33 +129,40 @@ export class PlaceDetailPage implements OnInit, OnDestroy {
         }
         if (result.role === "confirm") {
           console.log(result.data);
-          // start the loading first 
-          this.loaderCtrl.create({
-            message : 'Booking your place.This can take some delay. Do not move back'
-          }).then(loaderEl => {
-           loaderEl.present();
-            // add a new booking
-          this.bookingsService.addBooking(
-            this.loadedPlace.id,
-            this.loadedPlace.title,
-            this.loadedPlace.imageUrl,
-            result.data.bookingData.firstName,
-            result.data.bookingData.lastName,
-            result.data.bookingData.guestNumber,
-            result.data.bookingData.startDate,
-            result.data.bookingData.endDate
-          ).subscribe(() => {
-            // dismiss the loader
-            loaderEl.dismiss();
-            //
-          });
-          })
+          // start the loading first
+          this.loaderCtrl
+            .create({
+              message:
+                "Booking your place.This can take some delay. Do not move back"
+            })
+            .then(loaderEl => {
+              loaderEl.present();
+              // add a new booking
+              this.bookingsService
+                .addBooking(
+                  this.loadedPlace.id,
+                  this.loadedPlace.title,
+                  this.loadedPlace.imageUrl,
+                  result.data.bookingData.firstName,
+                  result.data.bookingData.lastName,
+                  result.data.bookingData.guestNumber,
+                  result.data.bookingData.startDate,
+                  result.data.bookingData.endDate
+                )
+                .subscribe(() => {
+                  // dismiss the loader
+                  loaderEl.dismiss();
+                  //
+                });
+            });
         }
       });
   }
 
   // Clear the subscription to avoid memory leaks
   ngOnDestroy() {
-    this.placeSubscription.unsubscribe();
+    if (this.placeSubscription) {
+      this.placeSubscription.unsubscribe();
+    }
   }
 }
