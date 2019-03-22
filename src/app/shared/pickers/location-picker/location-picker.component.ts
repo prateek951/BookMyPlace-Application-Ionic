@@ -14,9 +14,8 @@ import { of } from "rxjs";
   styleUrls: ["./location-picker.component.scss"]
 })
 export class LocationPickerComponent implements OnInit {
-  
-  selectedLocationImage:string;
-  
+  selectedLocationImage: string;
+  isLoading = false;
   constructor(
     private modalCtrl: ModalController,
     private httpClient: HttpClient
@@ -44,6 +43,8 @@ export class LocationPickerComponent implements OnInit {
             address: null,
             staticImageUrl: null
           };
+          //set the loading to true
+          this.isLoading = true;
           this.getAddressFromCoords(lat, lng)
             .pipe(
               switchMap(address => {
@@ -61,6 +62,7 @@ export class LocationPickerComponent implements OnInit {
             .subscribe(staticImageUrl => {
               pickedLocation.staticImageUrl = staticImageUrl;
               this.selectedLocationImage = staticImageUrl;
+              this.isLoading = false;
             });
         });
         modalEl.present();
