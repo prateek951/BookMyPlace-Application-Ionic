@@ -134,13 +134,13 @@ export class PlacesService {
     description: string,
     price: number
   ) {
-    //  Get the latest snapshot of the data using take
+    let updatedPlaces:Place[];
     return this.fetchPlaces().pipe(
       take(1),
       delay(1000),
-      tap(places => {
+      switchMap(places => {
         const updatedPlaceIndex = places.findIndex(p => p.id === placeId);
-        const updatedPlaces = [...places];
+        updatedPlaces = [...places];
         const oldPlace = updatedPlaces[updatedPlaceIndex];
         updatedPlaces[updatedPlaceIndex] = new Place(
           oldPlace.id,
@@ -153,9 +153,20 @@ export class PlacesService {
           oldPlace.availableTo,
           oldPlace.userId
         );
+        return this.httpClient.put(
+          `https://awesome-places-562a3.firebaseio.com/offered-places/${placeId}.json`,
+          {
+            ...updatedPlaces[updatedPlaceIndex],
+            id: null
+          }
+        );
+      }),
+      tap(() => {         
+        //  Get the latest snapshot of the data using take
         // Commit the latest changes
         this._places.next(updatedPlaces);
       })
     );
+
   }
 }
