@@ -5,12 +5,18 @@ import { MapModalComponent } from "./../../map-modal/map-modal.component";
 import { HttpClient } from "@angular/common/http";
 import { environment } from "./../../../../environments/environment";
 import { map } from "rxjs/operators";
+import { switchMap } from "rxjs/operators";
+import { PlaceLocation } from "src/app/places/location.model";
+import { of } from "rxjs";
 @Component({
   selector: "app-location-picker",
   templateUrl: "./location-picker.component.html",
   styleUrls: ["./location-picker.component.scss"]
 })
 export class LocationPickerComponent implements OnInit {
+  
+  selectedLocationImage:string;
+  
   constructor(
     private modalCtrl: ModalController,
     private httpClient: HttpClient
@@ -26,17 +32,46 @@ export class LocationPickerComponent implements OnInit {
         modalEl.onDidDismiss().then(modData => {
           // console.log(modData.data); this has the lat and long for which
           // we need the address
-          const { lat, lng } = modData.data;
           if (!modData.data) {
             return;
           }
-          this.getAddressFromCoords(lat, lng).subscribe(address => {
-            console.log(address);
-          });
+          // If have the modal data
+          const { lat, lng } = modData.data;
+          // Create the picked location object
+          const pickedLocation: PlaceLocation = {
+            lat,
+            lng,
+            address: null,
+            staticImageUrl: null
+          };
+          this.getAddressFromCoords(lat, lng)
+            .pipe(
+              switchMap(address => {
+                // Set the address that we fetched
+                pickedLocation.address = address;
+                return of(
+                  this.fetchStaticImage(
+                    pickedLocation.lat,
+                    pickedLocation.lng,
+                    14
+                  )
+                );
+              })
+            )
+            .subscribe(staticImageUrl => {
+              pickedLocation.staticImageUrl = staticImageUrl;
+              this.selectedLocationImage = staticImageUrl;
+            });
         });
         modalEl.present();
       });
   }
+  private fetchStaticImage(lat: number, lng: number, zoom: number) {
+    return `https://maps.googleapis.com/maps/api/staticmap?center=${lat},${lng}&zoom=${zoom}&size=500x300&maptype=roadmap
+    &markers=color:blue%7Clabel:Place%7C${lat},${lng}
+  &key=${environment.GOOGLE_MAPS_API_KEY}`;
+  }
+
   private getAddressFromCoords(lat: number, lng: number) {
     // Tap the Google Maps API key
     const { GOOGLE_MAPS_API_KEY } = environment;
