@@ -84,6 +84,7 @@ export class BookingService {
   // Utility method to cancel a booking pertaining to a bookingId
   cancelBooking(bookingId: string) {
     // console.log("inside the cancelBooking method");
+    
     return this.bookings.pipe(
       // operator functions
       take(1),
