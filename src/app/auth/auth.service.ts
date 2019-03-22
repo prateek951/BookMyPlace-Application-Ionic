@@ -6,7 +6,7 @@ import { Injectable } from "@angular/core";
 export class AuthService {
   private _isLoggedIn = false;
 
-  private _userId = "dummy";
+  private _userId = "abc";
   
   // Utility method to check whether the user is loggedIn or not
   get isLoggedIn() {

@@ -3,7 +3,9 @@ import { Injectable } from "@angular/core";
 import { Booking } from "./booking.model";
 import { BehaviorSubject } from "rxjs";
 import { AuthService } from "./../auth/auth.service";
-import { tap, take, delay } from "rxjs/operators";
+import { tap, take, delay, switchMap } from "rxjs/operators";
+import { HttpClient } from "@angular/common/http";
+import { switchMap } from "rxjs/operators";
 @Injectable({
   providedIn: "root"
 })
@@ -12,7 +14,7 @@ export class BookingService {
   // Set up the behavior subject for the bookings
   private _bookings = new BehaviorSubject<Booking[]>([]);
 
-  constructor(private authService: AuthService) {}
+  constructor(private authService: AuthService, private http: HttpClient) {}
 
   // getter for the bookings
   get bookings() {
@@ -29,6 +31,7 @@ export class BookingService {
     dateFrom: Date,
     dateTo: Date
   ) {
+    let genId: string;
     // console.log("inside the add Booking");
     // create a new booking
     const newBooking = new Booking(
@@ -44,16 +47,23 @@ export class BookingService {
       dateTo
     );
 
-    // Get the latest changes
-    return this.bookings.pipe(
-      take(1),
-      //add a delay here
-      delay(5000),
-      tap(bookings => {
-        //   Emit our old bookings along with the new one
-        this._bookings.next(bookings.concat(newBooking));
+    return this.http
+      .post<{name:string}>("https://awesome-places-562a3.firebaseio.com/bookings.json", {
+        ...newBooking,
+        id: null
       })
-    );
+      .pipe(
+        switchMap(resData => {
+          genId = resData.name;
+          return this.bookings;
+        }),
+        take(1),
+        tap(bookings => { 
+          newBooking.id = genId;
+          //   Emit our old bookings along with the new one
+          this._bookings.next(bookings.concat(newBooking));
+        })
+      );
   }
   // Utility method to cancel a booking pertaining to a bookingId
   cancelBooking(bookingId: string) {
