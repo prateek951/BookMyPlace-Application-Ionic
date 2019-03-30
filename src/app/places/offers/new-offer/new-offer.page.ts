@@ -29,7 +29,14 @@ export class NewOfferPage implements OnInit {
     // If the form is valid
     // Add the new offer to the list of the places that is managed by the places service
     // Tap the new offer fields
-    const { title, description, price, dateFrom, dateTo, location } = this.form.value;
+    const {
+      title,
+      description,
+      price,
+      dateFrom,
+      dateTo,
+      location
+    } = this.form.value;
     // console.log(title);
     // Create a new offer
     this.loaderController
@@ -62,6 +69,9 @@ export class NewOfferPage implements OnInit {
   onReceiveLocation(location: PlaceLocation) {
     // console.log(location); got the location
     this.form.patchValue({ location: location });
+  }
+  onReceiveImage(imageData: string) {
+    console.log(imageData);
   }
 
   ngOnInit() {
