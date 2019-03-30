@@ -1,0 +1,6 @@
+{
+  "appId": "com.ionicAppPlaces.ionicFirstApp",
+  "appName": "ionic-recipes",
+  "bundledWebRuntime": false,
+  "webDir": "www"
+}
