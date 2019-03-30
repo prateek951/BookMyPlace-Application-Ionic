@@ -35,7 +35,7 @@ export class ImagePickerComponent implements OnInit {
   onPickImage() {
     // Check whether the camera plugin is available or not
     //fallback check
-    if (!Capacitor.isPluginAvailable("Camera") || this.usePicker) {
+    if (!Capacitor.isPluginAvailable("Camera")) {
       // this.alertCtrl
       //   .create({
       //     header: "Could not enable the camera. You are using a legacy device",
@@ -62,6 +62,9 @@ export class ImagePickerComponent implements OnInit {
       })
       .catch(err => {
         console.log(err);
+        if (this.filePicker) {
+          this.filePicker.nativeElement.click();
+        }
         return false;
       });
   }
@@ -72,10 +75,10 @@ export class ImagePickerComponent implements OnInit {
     if (!chosenFile) {
       return;
     }
-    // start reading the file 
+    // start reading the file
     const fr = new FileReader();
     // convert the file to base64
-    fr.onload = () => { 
+    fr.onload = () => {
       const dataUrl = fr.result.toString();
       this.selectedImage = dataUrl;
       this.imagePicked.emit(chosenFile);
