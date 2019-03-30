@@ -5,7 +5,7 @@
     </ion-buttons>
     <ion-title>Create a new offer</ion-title>
     <ion-buttons slot="primary">
-      <ion-button [disabled]="form.invalid" (click)="onCreateOffer()">
+      <ion-button [disabled]="form.invalid || !form.get('image').value" (click)="onCreateOffer()">
         <ion-icon name="checkmark" slot="icon-only"></ion-icon>
       </ion-button>
     </ion-buttons>

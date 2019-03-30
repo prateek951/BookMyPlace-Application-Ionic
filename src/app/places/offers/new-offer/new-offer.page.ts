@@ -1,10 +1,11 @@
+//tslint:disable
 import { Component, OnInit } from "@angular/core";
 import { FormGroup, FormControl, Validators } from "@angular/forms";
 import { PlacesService } from "./../../places.service";
 import { Router } from "@angular/router";
 import { LoadingController } from "@ionic/angular";
 import { PlaceLocation } from "../../../places/location.model";
-
+import base64toBlob from "./../../../shared/utils/base64blob";
 @Component({
   selector: "app-new-offer",
   templateUrl: "./new-offer.page.html",
@@ -23,7 +24,7 @@ export class NewOfferPage implements OnInit {
 
   onCreateOffer() {
     // console.log("inside the onCreateOffer component..");
-    if (this.form.invalid) {
+    if (this.form.invalid || !this.form.get("image").value) {
       return;
     }
     // If the form is valid
@@ -35,8 +36,10 @@ export class NewOfferPage implements OnInit {
       price,
       dateFrom,
       dateTo,
-      location
+      location,
+      image
     } = this.form.value;
+    console.log(this.form.value);
     // console.log(title);
     // Create a new offer
     this.loaderController
@@ -70,8 +73,22 @@ export class NewOfferPage implements OnInit {
     // console.log(location); got the location
     this.form.patchValue({ location: location });
   }
-  onReceiveImage(imageData: string) {
-    console.log(imageData);
+  onReceiveImage(imageData: string | File) {
+    let imageFile;
+    if (typeof imageData === "string") {
+      try {
+        imageFile = base64toBlob(
+          imageData.replace("data:image/jpeg;base64,", ""),
+          "image/jpeg"
+        );
+      } catch (ex) {
+        console.log(ex);
+        return;
+      }
+    } else {
+      imageFile = imageData;
+    }
+    this.form.patchValue({ image: imageFile });
   }
 
   ngOnInit() {
@@ -103,7 +120,8 @@ export class NewOfferPage implements OnInit {
       }),
       location: new FormControl(null, {
         validators: [Validators.required]
-      })
+      }),
+      image: new FormControl(null)
     });
   }
 }

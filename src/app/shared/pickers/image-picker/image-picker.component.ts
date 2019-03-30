@@ -29,7 +29,7 @@ export class ImagePickerComponent implements OnInit {
   usePicker: boolean = false;
   //emit the event when the image gets picked up here
 
-  @Output() imagePicked = new EventEmitter<string>();
+  @Output() imagePicked = new EventEmitter<string | File>();
   constructor(private alertCtrl: AlertController, private platform: Platform) {}
 
   onPickImage() {
@@ -78,6 +78,7 @@ export class ImagePickerComponent implements OnInit {
     fr.onload = () => { 
       const dataUrl = fr.result.toString();
       this.selectedImage = dataUrl;
+      this.imagePicked.emit(chosenFile);
     };
     fr.readAsDataURL(chosenFile);
   }
