@@ -1,5 +1,5 @@
 //tslint:disable
-import { Component, OnInit, Output, EventEmitter } from "@angular/core";
+import { Component, OnInit, Output, EventEmitter, Input } from "@angular/core";
 import {
   ModalController,
   ActionSheetController,
@@ -23,7 +23,7 @@ import { Plugins, Capacitor, Geolocation } from "@capacitor/core";
 export class LocationPickerComponent implements OnInit {
   selectedLocationImage: string;
   isLoading = false;
-
+  @Input() showPreview: boolean = false;
   //setup the event emitter
 
   @Output() locationPicked = new EventEmitter<PlaceLocation>();

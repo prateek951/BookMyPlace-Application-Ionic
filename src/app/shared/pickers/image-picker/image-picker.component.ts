@@ -2,6 +2,7 @@
 import {
   Component,
   OnInit,
+  Input,
   Output,
   EventEmitter,
   ViewChild,
@@ -24,7 +25,7 @@ import { Platform } from "@ionic/angular";
 export class ImagePickerComponent implements OnInit {
   //set the ref property
   @ViewChild("filePicker") filePicker: ElementRef<HTMLInputElement>;
-
+  @Input() showPreview: boolean = false;
   selectedImage: string;
   usePicker: boolean = false;
   //emit the event when the image gets picked up here
@@ -81,6 +82,7 @@ export class ImagePickerComponent implements OnInit {
     fr.onload = () => {
       const dataUrl = fr.result.toString();
       this.selectedImage = dataUrl;
+      this.showPreview = true;
       this.imagePicked.emit(chosenFile);
     };
     fr.readAsDataURL(chosenFile);
