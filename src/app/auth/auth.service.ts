@@ -2,7 +2,9 @@
 import { Injectable } from "@angular/core";
 import { HttpClient } from "@angular/common/http";
 import { environment } from "./../../environments/environment";
-
+import { BehaviorSubject } from "rxjs";
+import { User } from "./user.model";
+import { map } from "rxjs/operators";
 // Setup the interface for the response data that we get back
 export interface AuthResponseData {
   kind: string;
@@ -19,19 +21,34 @@ export interface AuthResponseData {
   providedIn: "root"
 })
 export class AuthService {
-  // Initially the user is not authenticacted
-  private _isLoggedIn = false;
-  // set userId to null
-  private _userId = null;
+  // Create a user behavior subject to manage the token and the userid
+
+  private _user = new BehaviorSubject<User>(null);
 
   // Utility method to check whether the user is loggedIn or not
   get isLoggedIn() {
-    return this._isLoggedIn;
+    return this._user.asObservable().pipe(
+      map(user => {
+        if (user) {
+          return !!user.token;
+        } else {
+          return false;
+        }
+      })
+    );
   }
 
   // Utility method to return the userId
   get userId() {
-    return this._userId;
+    return this._user.asObservable().pipe(
+      map(user => {
+        if (user) {
+          return user.id;
+        } else {
+          return null;
+        }
+      })
+    );
   }
 
   constructor(private http: HttpClient) {}
@@ -53,11 +70,12 @@ export class AuthService {
       `https://www.googleapis.com/identitytoolkit/v3/relyingparty/verifyPassword?key=${
         environment.FIREBASE_API_KEY
       }`,
-      { email: email, password: password}
+      { email: email, password: password }
     );
   }
   // Utility method to logout the user
   logout() {
-    this._isLoggedIn = false;
+    //set next emission value to null
+    this._user.next(null);
   }
 }
