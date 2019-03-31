@@ -5,7 +5,7 @@ import { take, map, tap, delay, switchMap } from "rxjs/operators";
 import { Place } from "./place.model";
 import { AuthService } from "./../auth/auth.service";
 import { HttpClient } from "@angular/common/http";
-import { PlaceLocation } from './location.model';
+import { PlaceLocation } from "./location.model";
 
 interface PlaceData {
   availableFrom: string;
@@ -15,7 +15,7 @@ interface PlaceData {
   price: number;
   title: string;
   userId: string;
-  location: PlaceLocation
+  location: PlaceLocation;
 }
 
 @Injectable({
@@ -55,7 +55,7 @@ export class PlacesService {
                 new Date(resData[k].availableFrom),
                 new Date(resData[k].availableTo),
                 resData[k].userId,
-                resData[k].location 
+                resData[k].location
               )
             );
           });
@@ -98,13 +98,25 @@ export class PlacesService {
     // );
   }
 
+  uploadImage(image: File) {
+    // Create new form data
+    const uploadData = new FormData();
+    uploadData.append("image", image);
+    // Make the async call to upload the image
+    return this.httpClient.post<{ imageUrl: string; imagePath: string }>(
+      "https://us-central1-awesome-places-562a3.cloudfunctions.net/storeImage",
+      uploadData
+    );
+  }
+
   addPlace(
     title: string,
     description: string,
     price: number,
     dateFrom: Date,
     dateTo: Date,
-    location: PlaceLocation
+    location: PlaceLocation,
+    imageUrl: string
   ) {
     // Create a new place
     let genId: string;
@@ -112,7 +124,7 @@ export class PlacesService {
       Math.random().toString(),
       title,
       description,
-      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRvUa3rPdQbwSfdVJ0G3fIOeHnA3vmghZheOTJwhSU_EO8cWeWUFg",
+      imageUrl,
       price,
       dateFrom,
       dateTo,

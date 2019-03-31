@@ -6,6 +6,7 @@ import { Router } from "@angular/router";
 import { LoadingController } from "@ionic/angular";
 import { PlaceLocation } from "../../../places/location.model";
 import base64toBlob from "./../../../shared/utils/base64blob";
+import { switchMap } from "rxjs/operators";
 @Component({
   selector: "app-new-offer",
   templateUrl: "./new-offer.page.html",
@@ -48,16 +49,23 @@ export class NewOfferPage implements OnInit {
       })
       .then(loadingEl => {
         loadingEl.present();
+
+        // Store the image on the firebase cloud function storage
         this.placesService
-          .addPlace(
-            title,
-            description,
-            parseFloat(price),
-            new Date(dateFrom),
-            new Date(dateTo),
-            location
-          )
-          .subscribe(() => {
+          .uploadImage(this.form.get("image").value)
+          .pipe(
+            switchMap(uploadResponse => {
+              return this.placesService.addPlace(
+                title,
+                description,
+                parseFloat(price),
+                new Date(dateFrom),
+                new Date(dateTo),
+                location,
+                uploadResponse.imageUrl
+              );
+            })
+          ).subscribe(() => {
             // Dismiss the overlay
             loadingEl.dismiss();
             // Set isLoading to false
