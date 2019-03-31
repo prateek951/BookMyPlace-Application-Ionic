@@ -120,40 +120,44 @@ export class PlacesService {
   ) {
     // Create a new place
     let genId: string;
-    const newPlace = new Place(
-      Math.random().toString(),
-      title,
-      description,
-      imageUrl,
-      price,
-      dateFrom,
-      dateTo,
-      this.authService.userId,
-      location
-    );
-
-    // Create a new place onto the backend server
-    return this.httpClient
-      .post<{ name: string }>(
-        "https://awesome-places-562a3.firebaseio.com/offered-places.json",
-        {
-          ...newPlace,
-          id: null
+    let newPlace: Place;
+    return this.authService.userId.pipe(
+      take(1),
+      switchMap(userId => {
+        if (!userId) {
+          throw new Error("No user found");
         }
-      )
-      .pipe(
-        switchMap(resData => {
-          genId = resData.name;
-          return this.fetchPlaces();
-        }),
-        take(1),
-        delay(1000),
-        tap(places => {
-          newPlace.id = genId;
-          this._places.next(places.concat(newPlace));
-        })
-      );
-
+        newPlace = new Place(
+          Math.random().toString(),
+          title,
+          description,
+          imageUrl,
+          price,
+          dateFrom,
+          dateTo,
+          userId,
+          location
+        );
+        // Create a new place onto the backend server
+        return this.httpClient.post<{ name: string }>(
+          "https://awesome-places-562a3.firebaseio.com/offered-places.json",
+          {
+            ...newPlace,
+            id: null
+          }
+        );
+      }),
+      switchMap(resData => {
+        genId = resData.name;
+        return this.fetchPlaces();
+      }),
+      take(1),
+      delay(1000),
+      tap(places => {
+        newPlace.id = genId;
+        this._places.next(places.concat(newPlace));
+      })
+    );
     // Add the new place to the list of the places
     // Emit the new subject
     // return this.fetchPlaces().pipe(

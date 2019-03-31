@@ -45,41 +45,46 @@ export class BookingService {
     dateTo: Date
   ) {
     let genId: string;
-    // console.log("inside the add Booking");
-    // create a new booking
-    const newBooking = new Booking(
-      Math.random().toString(),
-      placeId,
-      this.authService.userId,
-      placeTitle,
-      placeImage,
-      firstName,
-      lastName,
-      guestNumber,
-      dateFrom,
-      dateTo
-    );
-
-    return this.http
-      .post<{ name: string }>(
-        "https://awesome-places-562a3.firebaseio.com/bookings.json",
-        {
-          ...newBooking,
-          id: null
+    let newBooking: Booking;
+    return this.authService.userId.pipe(
+      take(1),
+      switchMap(userId => {
+        if (!userId) {
+          throw new Error("No user id found");
         }
-      )
-      .pipe(
-        switchMap(resData => {
-          genId = resData.name;
-          return this.bookings;
-        }),
-        take(1),
-        tap(bookings => {
-          newBooking.id = genId;
-          //   Emit our old bookings along with the new one
-          this._bookings.next(bookings.concat(newBooking));
-        })
-      );
+        // create a new booking
+        newBooking = new Booking(
+          Math.random().toString(),
+          placeId,
+          userId,
+          placeTitle,
+          placeImage,
+          firstName,
+          lastName,
+          guestNumber,
+          dateFrom,
+          dateTo
+        );
+
+        return this.http.post<{ name: string }>(
+          "https://awesome-places-562a3.firebaseio.com/bookings.json",
+          {
+            ...newBooking,
+            id: null
+          }
+        );
+      }),
+      switchMap(resData => {
+        genId = resData.name;
+        return this.bookings;
+      }),
+      take(1),
+      tap(bookings => {
+        newBooking.id = genId;
+        //   Emit our old bookings along with the new one
+        this._bookings.next(bookings.concat(newBooking));
+      })
+    );
   }
   // Utility method to cancel a booking pertaining to a bookingId
   cancelBooking(bookingId: string) {

@@ -15,6 +15,7 @@ import { LoadingController } from "@ionic/angular";
 import { AuthService } from "./../../../auth/auth.service";
 import { AlertController } from "@ionic/angular";
 import { MapModalComponent } from "./../../../shared/map-modal/map-modal.component";
+import { switchMap } from "rxjs/operators";
 
 @Component({
   selector: "app-place-detail",
@@ -54,36 +55,47 @@ export class PlaceDetailPage implements OnInit, OnDestroy {
 
       // Set the isLoading to true
       this.isLoading = true;
-      this.placeSubscription = this.placesService.fetchPlace(placeId).subscribe(
-        place => {
-          this.loadedPlace = place;
+      let userId: string;
+      this.authService.userId
+        .pipe(
+          switchMap(userId => {
+            if (!userId) {
+              throw new Error(" Found no user");
+            }
+            userId = userId;
+            return this.placesService.fetchPlace(placeId);
+          })
+        )
+        .subscribe(
+          place => {
+            this.loadedPlace = place;
 
-          // Once we are done fetching set isLoading to false
-          this.isLoading = false;
-          if (this.loadedPlace.userId !== this.authService.userId) {
-            this.isBookable = true;
-          }
-        },
-        error => {
-          this.alertCtrl
-            .create({
-              header: "An error occurred",
-              message:
-                "Failed to fetch the place details.Please try again later",
-              buttons: [
-                {
-                  text: "Ok",
-                  handler: () => {
-                    this.router.navigateByUrl("/places/tabs/discover");
+            // Once we are done fetching set isLoading to false
+            this.isLoading = false;
+            if (this.loadedPlace.userId !== userId) {
+              this.isBookable = true;
+            }
+          },
+          error => {
+            this.alertCtrl
+              .create({
+                header: "An error occurred",
+                message:
+                  "Failed to fetch the place details.Please try again later",
+                buttons: [
+                  {
+                    text: "Ok",
+                    handler: () => {
+                      this.router.navigateByUrl("/places/tabs/discover");
+                    }
                   }
-                }
-              ]
-            })
-            .then(alertEl => {
-              alertEl.present();
-            });
-        }
-      );
+                ]
+              })
+              .then(alertEl => {
+                alertEl.present();
+              });
+          }
+        );
       // console.log(this.loadedPlace);
     });
   }
@@ -168,9 +180,9 @@ export class PlaceDetailPage implements OnInit, OnDestroy {
             lat: this.loadedPlace.location.lat,
             lng: this.loadedPlace.location.lng
           },
-          selectable : false,
-          closeButtonText: 'Close',
-          title : this.loadedPlace.location.address
+          selectable: false,
+          closeButtonText: "Close",
+          title: this.loadedPlace.location.address
         }
       })
       .then(modalEl => {
