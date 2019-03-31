@@ -5,6 +5,7 @@ import { Router } from "@angular/router";
 import { LoadingController, AlertController } from "@ionic/angular";
 import { NgForm } from "@angular/forms";
 import { Observable } from "rxjs";
+import authErrors from "./authErrors";
 // import { switchMap } from "rxjs/operators";
 
 @Component({
@@ -48,11 +49,32 @@ export class AuthPage implements OnInit {
           //call the login method if the mode is not register
           authObs = this.auth.login(email, password);
         }
-        authObs.subscribe(resData => {
-          console.log(resData);
-          loadingEl.dismiss();
-          this.router.navigateByUrl("/places/tabs/discover");
-        });
+        authObs.subscribe(
+          resData => {
+            console.log(resData);
+            loadingEl.dismiss();
+            this.router.navigateByUrl("/places/tabs/discover");
+          },
+          errorRes => {
+            loadingEl.dismiss();
+            let { message: code } = errorRes.error.error;
+            let message = "Could not register you up";
+            switch (code) {
+              case authErrors.EMAIL_EXISTS:
+                message = "This email is already in use";
+                break;
+              case authErrors.EMAIL_NOT_FOUND:
+                message = "E-mail address could not be found";
+                break;
+              case authErrors.INVALID_PASSWORD:
+                message = "Invalid Password. Please use a valid one";
+                break;
+              default:
+                console.log("some other error");
+            }
+            this.handleError(message);
+          }
+        );
       });
   }
   onSubmit(form: NgForm) {

@@ -1,0 +1,6 @@
+//tslint:disable
+export default {
+  EMAIL_EXISTS: "EMAIL_EXISTS",
+  EMAIL_NOT_FOUND: "EMAIL_NOT_FOUND",
+  INVALID_PASSWORD: "INVALID_PASSWORD"
+};
