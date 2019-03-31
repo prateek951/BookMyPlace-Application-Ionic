@@ -4,14 +4,14 @@ import { HttpClient } from "@angular/common/http";
 import { environment } from "./../../environments/environment";
 
 // Setup the interface for the response data that we get back
-interface AuthResponseData {
+export interface AuthResponseData {
   kind: string;
   idToken: string;
   email: string;
   refreshToken: string;
   expiresIn: string;
   localId: string;
-  //  This field is optional for register but mandatory for login 
+  //  This field is optional for register but mandatory for login
   registered?: boolean;
 }
 
@@ -48,8 +48,13 @@ export class AuthService {
   }
 
   // Utility method to login the user
-  login() {
-    this._isLoggedIn = true;
+  login(email: string, password: string) {
+    return this.http.post<AuthResponseData>(
+      `https://www.googleapis.com/identitytoolkit/v3/relyingparty/verifyPassword?key=${
+        environment.FIREBASE_API_KEY
+      }`,
+      { email: email, password: password}
+    );
   }
   // Utility method to logout the user
   logout() {

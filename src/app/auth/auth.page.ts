@@ -1,9 +1,10 @@
 //tslint:disable
 import { Component, OnInit } from "@angular/core";
-import { AuthService } from "./auth.service";
+import { AuthService, AuthResponseData } from "./auth.service";
 import { Router } from "@angular/router";
 import { LoadingController, AlertController } from "@ionic/angular";
 import { NgForm } from "@angular/forms";
+import { Observable } from "rxjs";
 // import { switchMap } from "rxjs/operators";
 
 @Component({
@@ -27,7 +28,7 @@ export class AuthPage implements OnInit {
   onAuthenticate(email: string, password: string) {
     // set the loading to true
     this.isLoading = true;
-    this.auth.login();
+    // this.auth.login();
     this.loadingController
       .create({
         keyboardClose: true,
@@ -36,31 +37,22 @@ export class AuthPage implements OnInit {
       })
       .then(loadingEl => {
         loadingEl.present();
+
+        let authObs: Observable<AuthResponseData>;
+
         if (this.mode === "register") {
           // call to register method
           // make the call to register method
-          this.auth.register(email, password).subscribe(
-            resData => {
-              console.log(resData);
-              //set the loading to false
-              this.isLoading = false;
-              loadingEl.dismiss();
-              //navigate
-              this.router.navigateByUrl("/places/tabs/discover");
-            },
-            errorRes => {
-              loadingEl.dismiss();
-              const code = errorRes.error.error.message;
-              let message = `Could not register you up`;
-              if (code === "EMAIL_EXISTS") {
-                message = "This email already exists";
-              }
-              this.handleError(message);
-            }
-          );
+          authObs = this.auth.register(email, password);
         } else {
-          // call to login method
+          //call the login method if the mode is not register
+          authObs = this.auth.login(email, password);
         }
+        authObs.subscribe(resData => {
+          console.log(resData);
+          loadingEl.dismiss();
+          this.router.navigateByUrl("/places/tabs/discover");
+        });
       });
   }
   onSubmit(form: NgForm) {
