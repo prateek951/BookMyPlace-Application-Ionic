@@ -2,9 +2,9 @@
 import { Component, OnInit } from "@angular/core";
 import { AuthService } from "./auth.service";
 import { Router } from "@angular/router";
-import { LoadingController } from "@ionic/angular";
+import { LoadingController, AlertController } from "@ionic/angular";
 import { NgForm } from "@angular/forms";
-import { switchMap } from "rxjs/operators";
+// import { switchMap } from "rxjs/operators";
 
 @Component({
   selector: "app-auth",
@@ -19,11 +19,12 @@ export class AuthPage implements OnInit {
   constructor(
     private auth: AuthService,
     private router: Router,
-    private loadingController: LoadingController
+    private loadingController: LoadingController,
+    private alertCtrl: AlertController
   ) {}
 
   ngOnInit() {}
-  onLogin() {
+  onAuthenticate(email: string, password: string) {
     // set the loading to true
     this.isLoading = true;
     this.auth.login();
@@ -35,31 +36,56 @@ export class AuthPage implements OnInit {
       })
       .then(loadingEl => {
         loadingEl.present();
-        setTimeout(() => {
-          // set back to false
-          this.isLoading = false;
-          loadingEl.dismiss();
-          this.router.navigateByUrl("/places/tabs/discover");
-        }, 2000);
+        if (this.mode === "register") {
+          // call to register method
+          // make the call to register method
+          this.auth.register(email, password).subscribe(
+            resData => {
+              console.log(resData);
+              //set the loading to false
+              this.isLoading = false;
+              loadingEl.dismiss();
+              //navigate
+              this.router.navigateByUrl("/places/tabs/discover");
+            },
+            errorRes => {
+              loadingEl.dismiss();
+              const code = errorRes.error.error.message;
+              let message = `Could not register you up`;
+              if (code === "EMAIL_EXISTS") {
+                message = "This email already exists";
+              }
+              this.handleError(message);
+            }
+          );
+        } else {
+          // call to login method
+        }
       });
   }
   onSubmit(form: NgForm) {
-    // Check for the validity of the form
+    // Check the validity of the form
     if (form.invalid) {
       return;
     }
-    // Tap the email and the password
+    // Tap the email and password fields values
     const { email, password } = form.value;
-    console.log(email, password);
-    if (this.mode === "register") {
-      // Send a request to register the user
-      this.auth.register(email, password).subscribe(resData => {
-        console.log(resData);
-      });
-    } else {
-      // Send a request to login the user
-    }
+    this.onAuthenticate(email, password);
   }
+
+  private handleError(message: string) {
+    this.alertCtrl
+      .create({
+        header: "Authentication failed",
+        message: message,
+        buttons: ["okay"]
+      })
+      .then(alertEl => {
+        alertEl.present();
+      });
+  }
+
+  // mode change handler
   onChangeMode() {
     if (this.mode === "login") {
       this.mode = "register";
