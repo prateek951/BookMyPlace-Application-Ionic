@@ -50,7 +50,7 @@
                  (click)="onLogin()" 
                  expand="block"
                  [disabled]="f.invalid">
-                  Login
+                  {{mode === 'register' ? 'Register' : "Login"}}
             </ion-button>
             <ion-button type="button" 
                  color="primary" 

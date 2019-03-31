@@ -1,13 +1,29 @@
+//tslint:disable
 import { Injectable } from "@angular/core";
+import { HttpClient } from "@angular/common/http";
+import { environment } from "./../../environments/environment";
+
+// Setup the interface for the response data that we get back
+interface AuthResponseData {
+  kind: string;
+  idToken: string;
+  email: string;
+  refreshToken: string;
+  expiresIn: string;
+  localId: string;
+  //  This field is optional for register but mandatory for login 
+  registered?: boolean;
+}
 
 @Injectable({
   providedIn: "root"
 })
 export class AuthService {
-  private _isLoggedIn = true;
+  // Initially the user is not authenticacted
+  private _isLoggedIn = false;
+  // set userId to null
+  private _userId = null;
 
-  private _userId = "abc";
-  
   // Utility method to check whether the user is loggedIn or not
   get isLoggedIn() {
     return this._isLoggedIn;
@@ -18,7 +34,19 @@ export class AuthService {
     return this._userId;
   }
 
-  constructor() {}
+  constructor(private http: HttpClient) {}
+
+  register(email: string, password: string) {
+    //Register a new user with the given mail and password
+
+    return this.http.post<AuthResponseData>(
+      `https://www.googleapis.com/identitytoolkit/v3/relyingparty/signupNewUser?key=${
+        environment.FIREBASE_API_KEY
+      }`,
+      { email: email, password: password, returnSecureToken: true }
+    );
+  }
+
   // Utility method to login the user
   login() {
     this._isLoggedIn = true;
